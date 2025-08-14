@@ -101,7 +101,7 @@ void ProcrastinatorAudioProcessor::prepareToPlay (double sampleRate, int samples
 {
     lastSampleRate = sampleRate;
     
-    maxDelayLength = static_cast<int>(sampleRate);
+    maxDelayLength = (int)sampleRate;
     delayIndex = 0;
     delayBuffer.setSize(getTotalNumOutputChannels(), maxDelayLength);
     delayBuffer.clear();
@@ -150,33 +150,81 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    auto* channelData_zero = buffer.getWritePointer(0);
+    auto* channelData_one = buffer.getWritePointer(1);
+    
+    for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
 
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-            float delayOutput = *delayBuffer.getWritePointer(channel, delayIndex);
-            
-            float delayInput = channelData[sample] + delayOutput * feedback;
-            *delayBuffer.getWritePointer(channel, delayIndex) = delayInput;
-            delayIndex++;
-            
-            if (delayIndex >= delayLength){
-                delayIndex = 0;
-            }
-            
-            float output = (1.0f - mix) * channelData[sample] + mix * delayOutput;
-            
-            if (output > 1.0f){
-                output = 1.0f;
-            }
-            else if (output < -1.0f){
-                output = -1.0f;
-            }
-            
-            channelData[sample] = output;
+        // retrieve oldest sample from delayBuffer
+        float delayOutput_zero = delayBuffer.getSample(0, delayIndex);
+        float delayOutput_one = delayBuffer.getSample(1, delayIndex);
+
+        // set new sample in delayBuffer
+        float delayInput_zero = channelData_zero[sample] + delayOutput_zero * feedback;
+        float delayInput_one = channelData_one[sample] + delayOutput_one * feedback;
+        delayBuffer.setSample(0, delayIndex, delayInput_zero);
+        delayBuffer.setSample(1, delayIndex, delayInput_one);
+
+        // incr index and wrap circular buffer if needed
+        delayIndex++;
+        if (delayIndex >= delayLength){
+            delayIndex = 0;
         }
+
+        float output_zero = (1.0f - mix) * channelData_zero[sample] + mix * delayOutput_zero;
+        float output_one = (1.0f - mix) * channelData_one[sample] + mix * delayOutput_one;
+
+        // limit output
+        if (output_zero > 1.0f){
+            output_zero = 1.0f;
+        }
+        else if (output_zero < -1.0f){
+            output_zero = -1.0f;
+        }
+        
+        if (output_one > 1.0f){
+            output_one = 1.0f;
+        }
+        else if (output_one < -1.0f){
+            output_one = -1.0f;
+        }
+
+        channelData_zero[sample] = output_zero;
+        channelData_one[sample] = output_one;
     }
+    
+//    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+//    {
+//        auto* channelData = buffer.getWritePointer (channel);
+//
+//        for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
+//
+//            // retrieve oldest sample from delayBuffer
+//            float delayOutput = delayBuffer.getSample(channel, delayIndex);
+//
+//            // set new sample in delayBuffer
+//            float delayInput = channelData[sample] + delayOutput * feedback;
+//            delayBuffer.setSample(channel, delayIndex, delayInput);
+//
+//            // incr index and wrap circular buffer if needed
+//            delayIndex++;
+//            if (delayIndex >= delayLength){
+//                delayIndex = 0;
+//            }
+//
+//            float output = (1.0f - mix) * channelData[sample] + mix * delayOutput;
+//
+//            // limit output
+//            if (output > 1.0f){
+//                output = 1.0f;
+//            }
+//            else if (output < -1.0f){
+//                output = -1.0f;
+//            }
+//
+//            channelData[sample] = output;
+//        }
+//    }
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor::createParameterLayout(){
@@ -184,6 +232,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     
     auto delayTime_ms = std::make_unique<juce::AudioParameterInt>("DELAYTIME", "Delay", 0, 1000, 500);
     auto mix = std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f);
+    
+    // change min feedback to -1.0f?
     auto feedback = std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", juce::NormalisableRange<float>(0.0f, 1.0f), 0.25f);
     
     params.push_back(std::move(delayTime_ms));
@@ -205,7 +255,7 @@ void ProcrastinatorAudioProcessor::updateParameters(){
 
 void ProcrastinatorAudioProcessor::updateDelay(){
     int delayTime_ms = treeState.getRawParameterValue("DELAYTIME")->load();
-    delayLength = (int)(0.001f * delayTime_ms * lastSampleRate);
+    delayLength = (unsigned int)(0.001f * delayTime_ms * lastSampleRate);
     
     if (delayLength > maxDelayLength){
         delayLength = maxDelayLength;
