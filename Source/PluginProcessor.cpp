@@ -150,20 +150,22 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    auto* channelData_zero = buffer.getWritePointer(0);
-    auto* channelData_one = buffer.getWritePointer(1);
-    
+
+    auto* channelDataL = buffer.getWritePointer (0);
+    auto* channelDataR = buffer.getWritePointer (1);
+
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
 
         // retrieve oldest sample from delayBuffer
-        float delayOutput_zero = delayBuffer.getSample(0, delayIndex);
-        float delayOutput_one = delayBuffer.getSample(1, delayIndex);
+        float delayOutputL = delayBuffer.getSample(0, delayIndex);
+        float delayOutputR = delayBuffer.getSample(1, delayIndex);
 
         // set new sample in delayBuffer
-        float delayInput_zero = channelData_zero[sample] + delayOutput_zero * feedback;
-        float delayInput_one = channelData_one[sample] + delayOutput_one * feedback;
-        delayBuffer.setSample(0, delayIndex, delayInput_zero);
-        delayBuffer.setSample(1, delayIndex, delayInput_one);
+        float delayInputL = channelDataL[sample] + delayOutputL * feedback;
+        float delayInputR = channelDataR[sample] + delayOutputR * feedback;
+
+        delayBuffer.setSample(0, delayIndex, delayInputL);
+        delayBuffer.setSample(1, delayIndex, delayInputR);
 
         // incr index and wrap circular buffer if needed
         delayIndex++;
@@ -171,60 +173,28 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             delayIndex = 0;
         }
 
-        float output_zero = (1.0f - mix) * channelData_zero[sample] + mix * delayOutput_zero;
-        float output_one = (1.0f - mix) * channelData_one[sample] + mix * delayOutput_one;
+        float outputL = (1.0f - mix) * channelDataL[sample] + mix * delayOutputL;
+        float outputR = (1.0f - mix) * channelDataR[sample] + mix * delayOutputR;
+
 
         // limit output
-        if (output_zero > 1.0f){
-            output_zero = 1.0f;
+        if (outputL > 1.0f){
+            outputL = 1.0f;
         }
-        else if (output_zero < -1.0f){
-            output_zero = -1.0f;
+        else if (outputL < -1.0f){
+            outputL = -1.0f;
         }
         
-        if (output_one > 1.0f){
-            output_one = 1.0f;
+        if (outputR > 1.0f){
+            outputR = 1.0f;
         }
-        else if (output_one < -1.0f){
-            output_one = -1.0f;
+        else if (outputR < -1.0f){
+            outputR = -1.0f;
         }
 
-        channelData_zero[sample] = output_zero;
-        channelData_one[sample] = output_one;
+        channelDataL[sample] = outputL;
+        channelDataR[sample] = outputR;
     }
-    
-//    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-//    {
-//        auto* channelData = buffer.getWritePointer (channel);
-//
-//        for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-//
-//            // retrieve oldest sample from delayBuffer
-//            float delayOutput = delayBuffer.getSample(channel, delayIndex);
-//
-//            // set new sample in delayBuffer
-//            float delayInput = channelData[sample] + delayOutput * feedback;
-//            delayBuffer.setSample(channel, delayIndex, delayInput);
-//
-//            // incr index and wrap circular buffer if needed
-//            delayIndex++;
-//            if (delayIndex >= delayLength){
-//                delayIndex = 0;
-//            }
-//
-//            float output = (1.0f - mix) * channelData[sample] + mix * delayOutput;
-//
-//            // limit output
-//            if (output > 1.0f){
-//                output = 1.0f;
-//            }
-//            else if (output < -1.0f){
-//                output = -1.0f;
-//            }
-//
-//            channelData[sample] = output;
-//        }
-//    }
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor::createParameterLayout(){
