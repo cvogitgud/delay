@@ -101,9 +101,16 @@ void ProcrastinatorAudioProcessor::prepareToPlay (double sampleRate, int samples
 {
     lastSampleRate = sampleRate;
     
+    auto numInputChannels = getTotalNumInputChannels();
+    
+    channelStates.resize(numInputChannels);
+    for (int channel = 0; channel < numInputChannels; ++channel){
+        channelStates[channel].channel = channel;
+        channelStates[channel].delayIndex = 0;
+    }
+    
     maxDelayLength = (int)sampleRate;
-    delayIndexL = delayIndexR = 0;
-    delayBuffer.setSize(getTotalNumOutputChannels(), maxDelayLength);
+    delayBuffer.setSize(numInputChannels, maxDelayLength);
     delayBuffer.clear();
     
     updateParameters();
@@ -156,28 +163,22 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         auto* channelData = buffer.getWritePointer(channel);
         
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-            float output = 0.0f;
             
-            if (channel == 0){
-                output = updateDelayBuffer(channelData[sample], channel, delayIndexL);
-            }
-            else if (channel == 1){
-                output = updateDelayBuffer(channelData[sample], channel, delayIndexR);
-            }
-
+            float output = updateDelayBuffer(channelData[sample], channelStates[channel]);
             channelData[sample] = limitOutput(output);
         }
     }
 }
 
-float ProcrastinatorAudioProcessor::updateDelayBuffer(float input, const int channel, int& index){
-    float delayOutput = delayBuffer.getSample(channel, index);
-    float delayInput = input + delayOutput * feedback;
-    delayBuffer.setSample(channel, index, delayInput);
+float ProcrastinatorAudioProcessor::updateDelayBuffer(float input, ChannelState& channelState){
     
-    index++;
-    if (index >= delayLength){
-        index = 0;
+    float delayOutput = delayBuffer.getSample(channelState.channel, channelState.delayIndex);
+    float delayInput = input + delayOutput * feedback;
+    delayBuffer.setSample(channelState.channel, channelState.delayIndex, delayInput);
+    
+    channelState.delayIndex++;
+    if (channelState.delayIndex >= delayLength){
+        channelState.delayIndex = 0;
     }
     
     float output = (1.0f - mix) * input + mix * delayOutput;

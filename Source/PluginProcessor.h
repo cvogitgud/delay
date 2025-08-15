@@ -10,6 +10,11 @@
 
 #include <JuceHeader.h>
 
+typedef struct {
+    int channel;
+    int delayIndex; // index within delayBuffer
+} ChannelState;
+
 //==============================================================================
 /**
 */
@@ -58,12 +63,14 @@ public:
 private:
     double lastSampleRate;
     
+    std::vector<ChannelState> channelStates;
+    
     juce::AudioBuffer<float> delayBuffer;
     int delayIndexL;
     int delayIndexR;
     int delayLength;
     int maxDelayLength;
-    float updateDelayBuffer(float input, const int channel, int& index);
+    float updateDelayBuffer(float input, ChannelState& channelState);
     
     float mix;
     float feedback;
