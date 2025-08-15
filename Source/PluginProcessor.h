@@ -59,12 +59,15 @@ private:
     double lastSampleRate;
     
     juce::AudioBuffer<float> delayBuffer;
-    int delayIndex;
+    int delayIndexL;
+    int delayIndexR;
     int delayLength;
     int maxDelayLength;
+    float updateDelayBuffer(float input, const int channel, int& index);
     
     float mix;
     float feedback;
+    float limitOutput(float value);
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     void parameterChanged(const juce::String& parameterId, float newValue) override;

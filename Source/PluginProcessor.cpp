@@ -102,7 +102,7 @@ void ProcrastinatorAudioProcessor::prepareToPlay (double sampleRate, int samples
     lastSampleRate = sampleRate;
     
     maxDelayLength = (int)sampleRate;
-    delayIndex = 0;
+    delayIndexL = delayIndexR = 0;
     delayBuffer.setSize(getTotalNumOutputChannels(), maxDelayLength);
     delayBuffer.clear();
     
@@ -150,51 +150,54 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-
-    auto* channelDataL = buffer.getWritePointer (0);
-    auto* channelDataR = buffer.getWritePointer (1);
-
-    for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-
-        // retrieve oldest sample from delayBuffer
-        float delayOutputL = delayBuffer.getSample(0, delayIndex);
-        float delayOutputR = delayBuffer.getSample(1, delayIndex);
-
-        // set new sample in delayBuffer
-        float delayInputL = channelDataL[sample] + delayOutputL * feedback;
-        float delayInputR = channelDataR[sample] + delayOutputR * feedback;
-
-        delayBuffer.setSample(0, delayIndex, delayInputL);
-        delayBuffer.setSample(1, delayIndex, delayInputR);
-
-        // incr index and wrap circular buffer if needed
-        delayIndex++;
-        if (delayIndex >= delayLength){
-            delayIndex = 0;
-        }
-
-        float outputL = (1.0f - mix) * channelDataL[sample] + mix * delayOutputL;
-        float outputR = (1.0f - mix) * channelDataR[sample] + mix * delayOutputR;
-
-
-        // limit output
-        if (outputL > 1.0f){
-            outputL = 1.0f;
-        }
-        else if (outputL < -1.0f){
-            outputL = -1.0f;
-        }
+    
+    for (int channel = 0; channel < totalNumInputChannels; ++channel){
         
-        if (outputR > 1.0f){
-            outputR = 1.0f;
-        }
-        else if (outputR < -1.0f){
-            outputR = -1.0f;
-        }
+        auto* channelData = buffer.getWritePointer(channel);
+        
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
+            float output = 0.0f;
+            
+            if (channel == 0){
+                output = updateDelayBuffer(channelData[sample], channel, delayIndexL);
+            }
+            else if (channel == 1){
+                output = updateDelayBuffer(channelData[sample], channel, delayIndexR);
+            }
 
-        channelDataL[sample] = outputL;
-        channelDataR[sample] = outputR;
+            channelData[sample] = limitOutput(output);
+        }
     }
+}
+
+float ProcrastinatorAudioProcessor::updateDelayBuffer(float input, const int channel, int& index){
+    float delayOutput = delayBuffer.getSample(channel, index);
+    float delayInput = input + delayOutput * feedback;
+    delayBuffer.setSample(channel, index, delayInput);
+    
+    index++;
+    if (index >= delayLength){
+        index = 0;
+    }
+    
+    float output = (1.0f - mix) * input + mix * delayOutput;
+    return output;
+}
+
+float ProcrastinatorAudioProcessor::limitOutput(float value){
+    float output = 0.0f;
+    
+    if (value > 1.0f){
+        output = 1.0f;
+    }
+    else if (value < -1.0f){
+        output = -1.0f;
+    }
+    else {
+        output = value;
+    }
+    
+    return output;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor::createParameterLayout(){
