@@ -195,9 +195,6 @@ float ProcrastinatorAudioProcessor::updateDelayBuffer(float input, ChannelState&
     int modulationLength = (int)(lfoValue * convertMStoSample(depth));
     
     int delayLength = centerDelayLength + modulationLength;
-    DBG("Center delay length: " << centerDelayLength);
-    DBG("Delay length: " << delayLength);
-    DBG("Modulation length: " << modulationLength);
     
     if (delayLength < 0){
         delayLength = 0;
