@@ -71,17 +71,28 @@ private:
     int delayLength;
     int maxDelayLength;
     float updateDelayBuffer(float input, ChannelState& channelState);
+    void updateDelayLength();
     
     float mix;
     float feedback;
     float limitOutput(float value);
+    void updateMix();
+    void updateFeedback();
+    
+    juce::dsp::Oscillator<float> lfo;
+    float lfoValue;
+    float rate; // frequency
+    float depth; // difference between min and max delay time
+    void updateRate();
+    void updateDepth();
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     void parameterChanged(const juce::String& parameterId, float newValue) override;
     void updateParameters();
-    void updateDelay();
-    void updateMix();
-    void updateFeedback();
+    
+    int convertMStoSample(const float time);
+    
+    
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessor)
