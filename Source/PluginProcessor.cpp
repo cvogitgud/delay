@@ -114,7 +114,6 @@ void ProcrastinatorAudioProcessor::prepareToPlay (double sampleRate, int samples
     lfo.prepare(spec);
     lfo.initialise([](float x) { return sin(x); });
     lfo.setFrequency(0.0f);
-    lfoValue = 0.0f;
     
     channelStates.resize(numInputChannels);
     for (int channel = 0; channel < numInputChannels; ++channel){
@@ -170,13 +169,11 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    juce::dsp::AudioBlock<float> block {buffer};
-    
     for (int channel = 0; channel < totalNumInputChannels; ++channel){
         
         auto* channelData = buffer.getWritePointer(channel);
         
-        for (int sample = 0; sample < block.getNumSamples(); ++sample){
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
             float output = updateDelayBuffer(channelData[sample], channelStates[channel]);
             channelData[sample] = limitOutput(output);
         }
@@ -194,10 +191,13 @@ float ProcrastinatorAudioProcessor::updateDelayBuffer(float input, ChannelState&
     float delayInput = input + delayOutput * feedback;
     delayBuffer.setSample(channelState.channel, channelState.delayIndex, delayInput);
     
-    lfoValue = lfo.processSample(0.0f);
-    float modulation = lfoValue * convertMStoSample(depth);
+    float lfoValue = lfo.processSample(0.0f);
+    int modulationLength = (int)(lfoValue * convertMStoSample(depth));
     
-    delayLength += modulation;
+    int delayLength = centerDelayLength + modulationLength;
+    DBG("Center delay length: " << centerDelayLength);
+    DBG("Delay length: " << delayLength);
+    DBG("Modulation length: " << modulationLength);
     
     if (delayLength < 0){
         delayLength = 0;
@@ -240,7 +240,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     
     auto feedback = std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.0f);
     
-    auto rate = std::make_unique<juce::AudioParameterFloat>("RATE", "Rate", juce::NormalisableRange<float>(0.1f, 10.0f), 0.1f);
+    auto rate = std::make_unique<juce::AudioParameterFloat>("RATE", "Rate", juce::NormalisableRange<float>(0.0f, 10.0f), 0.0f);
     auto depth = std::make_unique<juce::AudioParameterInt>("DEPTH", "Depth", 0, 10, 0);
     
     params.push_back(std::move(delayTime_ms));
@@ -266,10 +266,10 @@ void ProcrastinatorAudioProcessor::updateParameters(){
 
 void ProcrastinatorAudioProcessor::updateDelayLength(){
     int delayTime_ms = treeState.getRawParameterValue("DELAYTIME")->load();
-    delayLength = convertMStoSample(delayTime_ms);
+    centerDelayLength = convertMStoSample(delayTime_ms);
     
-    if (delayLength > maxDelayLength){
-        delayLength = maxDelayLength;
+    if (centerDelayLength > maxDelayLength){
+        centerDelayLength = maxDelayLength;
     }
 }
 
