@@ -86,7 +86,7 @@ private:
     void parameterChanged(const juce::String& parameterId, float newValue) override;
     void updateParameters();
     
-    int convertMStoSample(const float time);
+    int convertMStoSample(const int time);
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessor)

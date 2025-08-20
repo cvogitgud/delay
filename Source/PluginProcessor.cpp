@@ -181,7 +181,7 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
 }
 
 
-int ProcrastinatorAudioProcessor::convertMStoSample(const float time){
+int ProcrastinatorAudioProcessor::convertMStoSample(const int time){
     return (unsigned int) (0.001f * time * lastSampleRate);
 }
 
