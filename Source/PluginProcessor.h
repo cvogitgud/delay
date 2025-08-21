@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Processing/Delay.h"
 
 typedef struct {
     int channel;
