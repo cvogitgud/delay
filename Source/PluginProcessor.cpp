@@ -106,25 +106,7 @@ void ProcrastinatorAudioProcessor::prepareToPlay (double sampleRate, int samples
     auto numInputChannels = getTotalNumInputChannels();
     lastSampleRate = sampleRate;
     
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.numChannels = numInputChannels;
-    spec.maximumBlockSize = samplesPerBlock;
-    
-    lfo.prepare(spec);
-    lfo.initialise([](float x) { return sin(x); });
-    lfo.setFrequency(0.0f);
-    
-    channelStates.resize(numInputChannels);
-    for (int channel = 0; channel < numInputChannels; ++channel){
-        channelStates[channel].channel = channel;
-        channelStates[channel].delayIndex = 0;
-    }
-    
-    maxDelayLength = (int)sampleRate;
-    delayBuffer.setSize(numInputChannels, maxDelayLength);
-    delayBuffer.clear();
-    
+    delayLine.prepareToPlay(sampleRate, samplesPerBlock, numInputChannels);
     updateParameters();
 }
 
@@ -174,59 +156,10 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         auto* channelData = buffer.getWritePointer(channel);
         
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-            float output = updateDelayBuffer(channelData[sample], channelStates[channel]);
-            channelData[sample] = limitOutput(output);
+            float output = delayLine.updateDelayBuffer(channelData[sample], channel);
+            channelData[sample] = output;
         }
     }
-}
-
-
-int ProcrastinatorAudioProcessor::convertMStoSample(const int time){
-    return (unsigned int) (0.001f * time * lastSampleRate);
-}
-
-float ProcrastinatorAudioProcessor::updateDelayBuffer(float input, ChannelState& channelState){
-    
-    float delayOutput = delayBuffer.getSample(channelState.channel, channelState.delayIndex);
-    float delayInput = input + delayOutput * feedback;
-    delayBuffer.setSample(channelState.channel, channelState.delayIndex, delayInput);
-    
-    float lfoValue = lfo.processSample(0.0f);
-    int modulationLength = (int)(lfoValue * convertMStoSample(depth));
-    
-    int delayLength = centerDelayLength + modulationLength;
-    
-    if (delayLength < 0){
-        delayLength = 0;
-    }
-    if (delayLength >= maxDelayLength){
-        delayLength = maxDelayLength;
-    }
-    
-    channelState.delayIndex++;
-    if (channelState.delayIndex >= delayLength){
-        channelState.delayIndex = 0;
-    }
-    
-    float output = (1.0f - mix) * input + mix * delayOutput;
-    return output;
-}
-
-float ProcrastinatorAudioProcessor::limitOutput(float value){
-    
-    float output = 0.0f;
-    
-    if (value > 1.0f){
-        output = 1.0f;
-    }
-    else if (value < -1.0f){
-        output = -1.0f;
-    }
-    else {
-        output = value;
-    }
-    
-    return output;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor::createParameterLayout(){
@@ -234,9 +167,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     
     auto delayTime_ms = std::make_unique<juce::AudioParameterInt>("DELAYTIME", "Delay", 0, 1000, 500);
     auto mix = std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f);
-    
     auto feedback = std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.0f);
-    
     auto rate = std::make_unique<juce::AudioParameterFloat>("RATE", "Rate", juce::NormalisableRange<float>(0.0f, 10.0f), 0.0f);
     auto depth = std::make_unique<juce::AudioParameterInt>("DEPTH", "Depth", 0, 10, 0);
     
@@ -263,28 +194,27 @@ void ProcrastinatorAudioProcessor::updateParameters(){
 
 void ProcrastinatorAudioProcessor::updateDelayLength(){
     int delayTime_ms = treeState.getRawParameterValue("DELAYTIME")->load();
-    centerDelayLength = convertMStoSample(delayTime_ms);
-    
-    if (centerDelayLength > maxDelayLength){
-        centerDelayLength = maxDelayLength;
-    }
+    delayLine.setDelayLength(delayTime_ms);
 }
 
 void ProcrastinatorAudioProcessor::updateMix(){
-    mix = treeState.getRawParameterValue("MIX")->load();
+    float mix = treeState.getRawParameterValue("MIX")->load();
+    delayLine.setMix(mix);
 }
 
 void ProcrastinatorAudioProcessor::updateFeedback(){
-    feedback = treeState.getRawParameterValue("FEEDBACK")->load();
+    float feedback = treeState.getRawParameterValue("FEEDBACK")->load();
+    delayLine.setFeedback(feedback);
 }
 
 void ProcrastinatorAudioProcessor::updateRate(){
-    rate = treeState.getRawParameterValue("RATE")->load();
-    lfo.setFrequency(rate);
+    int rate = treeState.getRawParameterValue("RATE")->load();
+    delayLine.setRate(rate);
 }
 
 void ProcrastinatorAudioProcessor::updateDepth(){
-    depth = treeState.getRawParameterValue("DEPTH")->load();
+    int depth = treeState.getRawParameterValue("DEPTH")->load();
+    delayLine.setDepth(depth);
 }
 
 //==============================================================================

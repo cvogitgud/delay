@@ -11,11 +11,6 @@
 #include <JuceHeader.h>
 #include "Processing/Delay.h"
 
-typedef struct {
-    int channel;
-    int delayIndex; // index within delayBuffer
-} ChannelState;
-
 //==============================================================================
 /**
 */
@@ -64,30 +59,18 @@ public:
 private:
     double lastSampleRate;
     
-    std::vector<ChannelState> channelStates;
-    int centerDelayLength;
-    juce::AudioBuffer<float> delayBuffer;
-    int maxDelayLength;
-    float updateDelayBuffer(float input, ChannelState& channelState);
+    Delay delayLine;
+
     void updateDelayLength();
-    
-    float mix;
-    float feedback;
-    float limitOutput(float value);
     void updateMix();
     void updateFeedback();
-    
-    juce::dsp::Oscillator<float> lfo;
-    float rate;
-    float depth; // in ms
     void updateRate();
     void updateDepth();
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     void parameterChanged(const juce::String& parameterId, float newValue) override;
     void updateParameters();
-    
-    int convertMStoSample(const int time);
+
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessor)
