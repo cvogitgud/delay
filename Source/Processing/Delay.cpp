@@ -74,23 +74,38 @@ void Delay::setDelayLength(const int delayTime_ms){
 }
 
 void Delay::setMix(const float mix){
+    
+    jassert(isPrepared);
+    
     this->mix = mix;
 }
 
 void Delay::setFeedback(const float feedback){
+    
+    jassert(isPrepared);
+    
     this->feedback = feedback;
 }
 
 void Delay::setRate(const int rate){
+    
+    jassert(isPrepared);
+    
     this->rate = rate;
     lfo.setFrequency(rate);
 }
 
 void Delay::setDepth(const int depth){
+    
+    jassert(isPrepared);
+    
     this->depth = depth;
 }
 
 void Delay::reset(){
+    
+    jassert(isPrepared);
+    
     this->mix = DEFAULT_MIX;
     this->feedback = DEFAULT_FEEDBACK;
     this->rate = DEFAULT_RATE;
