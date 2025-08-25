@@ -156,8 +156,7 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         auto* channelData = buffer.getWritePointer(channel);
         
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-            float output = delayLine.updateDelayBuffer(channelData[sample], channel);
-            channelData[sample] = output;
+            channelData[sample] = delayLine.processSample(channel, channelData[sample]);
         }
     }
 }
@@ -168,6 +167,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     auto delayTime_ms = std::make_unique<juce::AudioParameterInt>("DELAYTIME", "Delay", 0, 1000, 500);
     auto mix = std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f);
     auto feedback = std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.0f);
+    
     auto rate = std::make_unique<juce::AudioParameterFloat>("RATE", "Rate", juce::NormalisableRange<float>(0.0f, 10.0f), 0.0f);
     auto depth = std::make_unique<juce::AudioParameterInt>("DEPTH", "Depth", 0, 10, 0);
     
@@ -181,6 +181,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
 }
 
 void ProcrastinatorAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue){
+    // should use newValue instead of getting from tree?
     updateParameters();
 }
 

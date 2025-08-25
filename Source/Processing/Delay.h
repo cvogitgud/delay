@@ -11,6 +11,10 @@
 #pragma once
 
 #include <JuceHeader.h>
+#define DEFAULT_MIX 0.5
+#define DEFAULT_FEEDBACK 0.5
+#define DEFAULT_RATE 0.0
+#define DEFAULT_DEPTH 0.0
 
 typedef struct {
     int channel;
@@ -19,10 +23,8 @@ typedef struct {
 
 class Delay {
 public:
-    Delay();
     void prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels);
-    void process(juce::AudioBuffer<float>& buffer);
-    float updateDelayBuffer(float input, int channel);
+    float processSample(int channel, float sample);
     
     void setDelayLength(const int delayTime_ms);
     void setMix(const float mix);
@@ -30,12 +32,11 @@ public:
     void setRate(const int rate);
     void setDepth(const int depth);
     
-    void updateParameters();
-    
     void reset();
     
 private:
-    double lastSampleRate = 44100.0f;
+    bool isPrepared {false};
+    double lastSampleRate;
     
     std::vector<ChannelState> channelStates;
     
@@ -43,13 +44,14 @@ private:
     int centerDelayLength;
     int maxDelayLength;
     
-    float mix = 0.5f;
-    float feedback = 0.5f;
+    float mix;
+    float feedback;
     
     juce::dsp::Oscillator<float> lfo;
-    float rate = 0.0f;
-    float depth = 0.0f; // in ms
+    int rate;
+    int depth; // in ms
     
+    int limitDelayLength(int delayLength);
     int convertMStoSample(const int time);
     float limitOutput(float value);
 };

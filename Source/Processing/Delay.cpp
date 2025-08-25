@@ -10,12 +10,8 @@
 
 #include "Delay.h"
 
-Delay::Delay(){
-    
-}
-
 void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels){
-    lastSampleRate = sampleRate;
+    this->lastSampleRate = sampleRate;
     
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -28,8 +24,8 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
         channelStates[channel].delayIndex = 0;
     }
     
-    centerDelayLength = (int)(sampleRate / 2);
-    maxDelayLength = (int)sampleRate;
+    this->centerDelayLength = (int)(sampleRate / 2);
+    this->maxDelayLength = (int)sampleRate;
 
     delayBuffer.setSize(numChannels, maxDelayLength);
     delayBuffer.clear();
@@ -37,9 +33,14 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
     lfo.prepare(spec);
     lfo.initialise([](float x) { return sin(x); });
     lfo.setFrequency(rate);
+    
+    this->isPrepared = true;
 }
 
-float Delay::updateDelayBuffer(float input, int channel){
+float Delay::processSample(int channel, float input){
+    
+    jassert (isPrepared);
+    
     ChannelState* channelState = &channelStates[channel];
     
     float delayOutput = delayBuffer.getSample(channelState->channel, channelState->delayIndex);
@@ -50,13 +51,7 @@ float Delay::updateDelayBuffer(float input, int channel){
     int modulationLength = (int)(lfoValue * convertMStoSample(depth));
     
     int delayLength = centerDelayLength + modulationLength;
-    
-    if (delayLength < 0){
-        delayLength = 0;
-    }
-    if (delayLength >= maxDelayLength){
-        delayLength = maxDelayLength;
-    }
+    delayLength = limitDelayLength(delayLength);
     
     channelState->delayIndex++;
     if (channelState->delayIndex >= delayLength){
@@ -67,11 +62,10 @@ float Delay::updateDelayBuffer(float input, int channel){
     return limitOutput(output);
 }
 
-int Delay::convertMStoSample(const int time){
-    return (unsigned int) (0.001f * time * lastSampleRate);
-}
-
 void Delay::setDelayLength(const int delayTime_ms){
+    
+    jassert(isPrepared);
+    
     centerDelayLength = convertMStoSample(delayTime_ms);
     
     if (centerDelayLength > maxDelayLength){
@@ -96,14 +90,37 @@ void Delay::setDepth(const int depth){
     this->depth = depth;
 }
 
-void Delay::updateParameters(){
+void Delay::reset(){
+    this->mix = DEFAULT_MIX;
+    this->feedback = DEFAULT_FEEDBACK;
+    this->rate = DEFAULT_RATE;
+    this->depth = DEFAULT_DEPTH;
+    this->mix = DEFAULT_MIX;
     
+    this->centerDelayLength = lastSampleRate / 2;
+    delayBuffer.clear();
+    
+    for (int channel = 0; channel < channelStates.size(); ++channel){
+        channelStates[channel].delayIndex = 0;
+    }
+    
+    lfo.reset();
 }
 
-void Delay::reset(){
-    // reset values
-    // reset lfo
-    lfo.reset();
+int Delay::limitDelayLength(int delayLength){
+    
+    int result = delayLength;
+    if (delayLength < 0){
+        result = 0;
+    }
+    if (delayLength >= maxDelayLength){
+        result = maxDelayLength;
+    }
+    return result;
+}
+
+int Delay::convertMStoSample(const int time){
+    return (unsigned int) (0.001f * time * lastSampleRate);
 }
 
 float Delay::limitOutput(float value){
