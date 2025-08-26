@@ -88,7 +88,7 @@ void Delay::setFeedback(const float feedback){
     this->feedback = feedback;
 }
 
-void Delay::setRate(const int rate){
+void Delay::setRate(const float rate){
     
     jassert(isPrepared);
     

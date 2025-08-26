@@ -29,7 +29,7 @@ public:
     void setDelayLength(const int delayTime_ms);
     void setMix(const float mix);
     void setFeedback(const float feedback);
-    void setRate(const int rate);
+    void setRate(const float rate);
     void setDepth(const int depth);
     
     void reset();
@@ -48,7 +48,7 @@ private:
     float feedback = 0.0f;
     
     juce::dsp::Oscillator<float> lfo;
-    int rate = 0;
+    float rate = 0;
     int depth = 0; // in ms
     
     int limitDelayLength(int delayLength);
