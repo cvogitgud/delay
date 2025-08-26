@@ -48,7 +48,7 @@ private:
     float feedback = 0.0f;
     
     juce::dsp::Oscillator<float> lfo;
-    float rate = 0;
+    float rate = 0.0f;
     int depth = 0; // in ms
     
     int limitDelayLength(int delayLength);
