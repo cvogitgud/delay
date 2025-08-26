@@ -166,9 +166,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     
     auto delayTime_ms = std::make_unique<juce::AudioParameterInt>("DELAYTIME", "Delay", 0, 1000, 500);
     auto mix = std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f);
-    auto feedback = std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.5f);
+    auto feedback = std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.0f);
     
-    auto rate = std::make_unique<juce::AudioParameterFloat>("RATE", "Rate", juce::NormalisableRange<float>(0.0f, 10.0f), 0.0f);
+    auto rate = std::make_unique<juce::AudioParameterInt>("RATE", "Rate", 0, 10, 0);
     auto depth = std::make_unique<juce::AudioParameterInt>("DEPTH", "Depth", 0, 10, 0);
     
     params.push_back(std::move(delayTime_ms));
