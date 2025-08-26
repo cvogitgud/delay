@@ -32,6 +32,7 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
     
     lfo.prepare(spec);
     lfo.initialise([](float x) { return sin(x); });
+    
     lfo.setFrequency(rate);
     
     this->isPrepared = true;

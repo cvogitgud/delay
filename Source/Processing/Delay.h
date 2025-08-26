@@ -44,12 +44,12 @@ private:
     int centerDelayLength;
     int maxDelayLength;
     
-    float mix;
-    float feedback;
+    float mix = 0.5f;
+    float feedback = 0.0f;
     
     juce::dsp::Oscillator<float> lfo;
-    int rate;
-    int depth; // in ms
+    int rate = 0;
+    int depth = 0; // in ms
     
     int limitDelayLength(int delayLength);
     int convertMStoSample(const int time);
