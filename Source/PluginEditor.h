@@ -10,6 +10,9 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "UI/Dial.h"
+#include "UI/PowerSwitch.h"
+#include "UI/PowerLED.h"
 
 //==============================================================================
 /**
@@ -28,6 +31,12 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     ProcrastinatorAudioProcessor& audioProcessor;
+    
+    Dial mix;
+    Dial delay;
+    Dial feedback;
+    Dial rate;
+    Dial depth;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessorEditor)
 };

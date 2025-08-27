@@ -11,11 +11,18 @@
 
 //==============================================================================
 ProcrastinatorAudioProcessorEditor::ProcrastinatorAudioProcessorEditor (ProcrastinatorAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DELAYTIME", "Delay"), feedback(audioProcessor.treeState, "FEEDBACK", "Feedback"), rate(audioProcessor.treeState, "RATE", "Rate"), depth(audioProcessor.treeState, "DEPTH", "Depth")
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    int width = 300;
+    int height = width * 7/5;
+    setSize (width, height);
+    
+    addAndMakeVisible(mix);
+    addAndMakeVisible(delay);
+    addAndMakeVisible(feedback);
+    addAndMakeVisible(rate);
+    addAndMakeVisible(depth);
 }
 
 ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
@@ -35,6 +42,21 @@ void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 
 void ProcrastinatorAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    /*
+     TOP ROW: Feedback - Rate - Depth
+     BOT ROW: Mix             - Delay
+     Lower Half: Power switch
+     */
+    
+    int dialWidth = getWidth() / 3;
+    int dialHeight = getHeight() / 4;
+    
+    mix.setBounds(0, 0, dialWidth, dialHeight);
+    delay.setBounds(mix.getRight(), 0, dialWidth, dialHeight);
+    feedback.setBounds(delay.getRight(), 0, dialWidth, dialHeight);
+    
+    rate.setBounds(0, dialHeight, dialWidth, dialHeight);
+    depth.setBounds(delay.getRight(), dialHeight, dialWidth, dialHeight);
+    
+    
 }

@@ -226,8 +226,8 @@ bool ProcrastinatorAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* ProcrastinatorAudioProcessor::createEditor()
 {
-//    return new ProcrastinatorAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new ProcrastinatorAudioProcessorEditor (*this);
+//    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
