@@ -37,30 +37,27 @@ ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
 //==============================================================================
 void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (15.0f));
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    juce::Colour bgColour = juce::Colours::darkslateblue;
+    g.fillAll (bgColour);
+    
+    juce::Colour borderColour = juce::Colours::black;
+    g.setColour (borderColour);
+    juce::Rectangle pluginBorder = juce::Rectangle<float>(0.0, 0.0, (float)getWidth(), (float)getHeight());
+    g.drawRoundedRectangle(pluginBorder, 9.0f, 4);
 }
 
 void ProcrastinatorAudioProcessorEditor::resized()
 {
-    /*
-     TOP ROW: Rate -            Depth
-     BOT ROW: Mix  - Feedback - Delay
-     Lower Half: Power switch
-     */
-    
     int dialWidth = getWidth() / 3;
     int dialHeight = getHeight() / 5;
     
     rate.setBounds(0, 0, dialWidth, dialHeight);
     depth.setBounds(getWidth() - dialWidth, 0, dialWidth, dialHeight);
     
-    mix.setBounds(0, rate.getBottom(), dialWidth, dialHeight);
-    delay.setBounds(mix.getRight(), mix.getY(), dialWidth, dialHeight);
-    feedback.setBounds(delay.getRight(), mix.getY(), dialWidth, dialHeight);
+    int bottomRowY = rate.getBottom();
+    mix.setBounds(0, bottomRowY, dialWidth, dialHeight);
+    delay.setBounds(mix.getRight(), bottomRowY, dialWidth, dialHeight);
+    feedback.setBounds(delay.getRight(), bottomRowY, dialWidth, dialHeight);
     
     int bottomMargin = 20;
     int powerSwitchWidth = getWidth() * 0.75;
