@@ -26,7 +26,7 @@ public:
     juce::TextButton& getButton();
     
 private:
-    juce::Colour switchColour = juce::Colour(182,182,182).brighter(0.4f);
+    juce::Colour switchColour = juce::Colours::black;
     juce::TextButton button;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAttachment;
     

@@ -27,6 +27,7 @@ ProcrastinatorAudioProcessor::ProcrastinatorAudioProcessor()
     treeState.addParameterListener("FEEDBACK", this);
     treeState.addParameterListener("RATE", this);
     treeState.addParameterListener("DEPTH", this);
+    treeState.addParameterListener("POWER", this);
 }
 
 ProcrastinatorAudioProcessor::~ProcrastinatorAudioProcessor()
@@ -36,6 +37,7 @@ ProcrastinatorAudioProcessor::~ProcrastinatorAudioProcessor()
     treeState.removeParameterListener("FEEDBACK", this);
     treeState.removeParameterListener("RATE", this);
     treeState.removeParameterListener("DEPTH", this);
+    treeState.removeParameterListener("POWER", this);
 }
 
 //==============================================================================
@@ -171,11 +173,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     auto rate = std::make_unique<juce::AudioParameterFloat>("RATE", "Rate", juce::NormalisableRange<float>(0.0f, 10.0f), 0.0f);
     auto depth = std::make_unique<juce::AudioParameterInt>("DEPTH", "Depth", 0, 10, 0);
     
+    auto power = std::make_unique<juce::AudioParameterBool>("POWER", "Power", true);
+    
     params.push_back(std::move(delayTime_ms));
     params.push_back(std::move(mix));
     params.push_back(std::move(feedback));
     params.push_back(std::move(rate));
     params.push_back(std::move(depth));
+    params.push_back(std::move(power));
     
     return {params.begin(), params.end()};
 }
@@ -191,6 +196,7 @@ void ProcrastinatorAudioProcessor::updateParameters(){
     updateFeedback();
     updateRate();
     updateDepth();
+    updatePower();
 }
 
 void ProcrastinatorAudioProcessor::updateDelayLength(){
@@ -216,6 +222,10 @@ void ProcrastinatorAudioProcessor::updateRate(){
 void ProcrastinatorAudioProcessor::updateDepth(){
     int depth = treeState.getRawParameterValue("DEPTH")->load();
     delayLine.setDepth(depth);
+}
+
+void ProcrastinatorAudioProcessor::updatePower(){
+    powerOn = treeState.getRawParameterValue("POWER")->load();
 }
 
 //==============================================================================

@@ -12,7 +12,7 @@
 //==============================================================================
 ProcrastinatorAudioProcessorEditor::ProcrastinatorAudioProcessorEditor (ProcrastinatorAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
-mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DELAYTIME", "Delay"), feedback(audioProcessor.treeState, "FEEDBACK", "Feedback"), rate(audioProcessor.treeState, "RATE", "Rate"), depth(audioProcessor.treeState, "DEPTH", "Depth")
+mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DELAYTIME", "Delay"), feedback(audioProcessor.treeState, "FEEDBACK", "Feedback"), rate(audioProcessor.treeState, "RATE", "Rate"), depth(audioProcessor.treeState, "DEPTH", "Depth"), power(audioProcessor.treeState, "POWER"), led(juce::Colours::red)
 {
     int width = 300;
     int height = width * 7/5;
@@ -23,6 +23,11 @@ mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DE
     addAndMakeVisible(feedback);
     addAndMakeVisible(rate);
     addAndMakeVisible(depth);
+    
+    addAndMakeVisible(power);
+    power.getButton().onClick = [this] { togglePowerLED(); };
+    
+    addAndMakeVisible(led);
 }
 
 ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
@@ -32,7 +37,6 @@ ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
 //==============================================================================
 void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
     g.setColour (juce::Colours::white);
@@ -43,20 +47,39 @@ void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 void ProcrastinatorAudioProcessorEditor::resized()
 {
     /*
-     TOP ROW: Feedback - Rate - Depth
-     BOT ROW: Mix             - Delay
+     TOP ROW: Rate -            Depth
+     BOT ROW: Mix  - Feedback - Delay
      Lower Half: Power switch
      */
     
     int dialWidth = getWidth() / 3;
-    int dialHeight = getHeight() / 4;
+    int dialHeight = getHeight() / 5;
     
-    mix.setBounds(0, 0, dialWidth, dialHeight);
-    delay.setBounds(mix.getRight(), 0, dialWidth, dialHeight);
-    feedback.setBounds(delay.getRight(), 0, dialWidth, dialHeight);
+    rate.setBounds(0, 0, dialWidth, dialHeight);
+    depth.setBounds(getWidth() - dialWidth, 0, dialWidth, dialHeight);
     
-    rate.setBounds(0, dialHeight, dialWidth, dialHeight);
-    depth.setBounds(delay.getRight(), dialHeight, dialWidth, dialHeight);
+    mix.setBounds(0, rate.getBottom(), dialWidth, dialHeight);
+    delay.setBounds(mix.getRight(), mix.getY(), dialWidth, dialHeight);
+    feedback.setBounds(delay.getRight(), mix.getY(), dialWidth, dialHeight);
     
+    int bottomMargin = 20;
+    int powerSwitchWidth = getWidth() * 0.75;
+    int powerSwitchHeight = getHeight() * 0.35;
+    int powerX = getWidth() / 2 - powerSwitchWidth / 2;
+    int powerY = getHeight() - powerSwitchHeight - bottomMargin;
+    power.setBounds(powerX, powerY, powerSwitchWidth, powerSwitchHeight);
     
+    int ledRadius = 10.0f;
+    led.setBounds(getWidth() / 2 - ledRadius / 2, 25, ledRadius, ledRadius);
+}
+
+void ProcrastinatorAudioProcessorEditor::togglePowerLED(){
+    // change colour and call repaint PowerLED
+    if (power.getButton().getToggleState() == true){
+        led.setLEDColour(juce::Colours::red);
+    }
+    else{
+        led.setLEDColour(juce::Colour(182,182,182).brighter(0.4f));
+    }
+    led.repaint();
 }

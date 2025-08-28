@@ -26,6 +26,7 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    void togglePowerLED();
 
 private:
     // This reference is provided as a quick way for your editor to
@@ -37,6 +38,9 @@ private:
     Dial feedback;
     Dial rate;
     Dial depth;
+    
+    PowerSwitch power;
+    PowerLED led;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessorEditor)
 };
