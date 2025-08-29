@@ -13,11 +13,11 @@
 #include "PowerLED.h"
 
 //==============================================================================
-PowerLED::PowerLED(juce::Colour colour)
+PowerLED::PowerLED(juce::Colour colour, float radius)
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
+    this->onColour = colour;
     this->ledColour = colour;
+    this->radius = radius;
 }
 
 PowerLED::~PowerLED()
@@ -26,6 +26,16 @@ PowerLED::~PowerLED()
 
 void PowerLED::setLEDColour(juce::Colour colour){
     this->ledColour = colour;
+}
+
+void PowerLED::toggleOn(){
+    this->ledColour = onColour;
+    this->repaint();
+}
+
+void PowerLED::toggleOff(){
+    this->ledColour = offColour;
+    this->repaint();
 }
 
 void PowerLED::paint (juce::Graphics& g)
@@ -39,4 +49,10 @@ void PowerLED::resized()
     // This method is where you should set the bounds of any child
     // components that your component contains..
 
+}
+
+bool PowerLED::hitTest(int x, int y){
+    bool inXBounds = (0 <= x && x <= radius);
+    bool inYBounds = (0 <= y && y <= radius);
+    return inXBounds && inYBounds;
 }

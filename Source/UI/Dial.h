@@ -32,7 +32,10 @@ public:
         g.fillEllipse(rX, rY, diameter, diameter);
         
         juce::Path dialTickPath;
-        dialTickPath.addRectangle(0, -radius, 5, 10);
+        float tickWidth = 5.0;
+        float tickHeight = 10.0;
+        juce::Rectangle tick = juce::Rectangle<float>(0.0 - tickWidth / 2, -radius, tickWidth, tickHeight);
+        dialTickPath.addRoundedRectangle(tick, 1.5f);
         g.setColour(juce::Colours::white);
         g.fillPath(dialTickPath, juce::AffineTransform::rotation(angle).translated(centreX, centreY));
         
