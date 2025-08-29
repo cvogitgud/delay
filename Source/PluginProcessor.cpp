@@ -158,7 +158,9 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         auto* channelData = buffer.getWritePointer(channel);
         
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-            channelData[sample] = delayLine.processSample(channel, channelData[sample]);
+            if (powerOn){
+                channelData[sample] = delayLine.processSample(channel, channelData[sample]);
+            }
         }
     }
 }
