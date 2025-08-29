@@ -29,6 +29,12 @@ mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DE
     
     led.setLEDColour(juce::Colours::red);
     addAndMakeVisible(led);
+    
+    pedalLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    pedalLabel.setJustificationType(juce::Justification::centred);
+    pedalLabel.setFont(juce::FontOptions(30.0f));
+    pedalLabel.setText(pedalName, juce::dontSendNotification);
+    addAndMakeVisible(pedalLabel);
 }
 
 ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
@@ -38,18 +44,7 @@ ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
 //==============================================================================
 void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // BG
     g.fillAll (juce::Colours::darkslateblue);
-    
-//    // Border for Dials
-//    float dialBorderWidth = getWidth() - 20;
-//    float dialBorderHeight = getHeight() / 2 - 30;
-//    float dialBorderX = getWidth() / 2 - dialBorderWidth / 2;
-//    float dialBorderY = -1.0;
-//    juce::Rectangle dialBorder = juce::Rectangle<float>(dialBorderX, dialBorderY, dialBorderWidth, dialBorderHeight);
-//
-//    g.setColour(juce::Colours::whitesmoke);
-//    g.drawRoundedRectangle(dialBorder, 2.0f, 2.0f);
 }
 
 void ProcrastinatorAudioProcessorEditor::resized()
@@ -76,10 +71,15 @@ void ProcrastinatorAudioProcessorEditor::resized()
     int ledX = getWidth() / 2 - ledRadius / 2;
     int ledY = 25;
     led.setBounds(ledX, ledY, ledRadius, ledRadius);
+    
+    int labelWidth = getWidth();
+    int labelHeight = powerY - mix.getBottom();
+    int labelX = getWidth() / 2 - labelWidth / 2;
+    int labelY = mix.getBottom();
+    pedalLabel.setBounds(labelX, labelY, labelWidth, labelHeight);
 }
 
 void ProcrastinatorAudioProcessorEditor::togglePowerLED(){
-    // change colour and call repaint PowerLED
     if (power.getButton().getToggleState() == true){
         led.toggleOn();
     }
