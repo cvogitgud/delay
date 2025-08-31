@@ -13,11 +13,10 @@
 #include "PowerLED.h"
 
 //==============================================================================
-PowerLED::PowerLED(juce::Colour colour, float radius)
+PowerLED::PowerLED(juce::Colour colour)
 {
     this->onColour = colour;
     this->ledColour = colour;
-    this->radius = radius;
 }
 
 PowerLED::~PowerLED()
@@ -26,6 +25,10 @@ PowerLED::~PowerLED()
 
 void PowerLED::setLEDColour(juce::Colour colour){
     this->ledColour = colour;
+}
+
+void PowerLED::setRadius(float radius){
+    this->radius = radius;
 }
 
 void PowerLED::toggleOn(){
@@ -40,8 +43,27 @@ void PowerLED::toggleOff(){
 
 void PowerLED::paint (juce::Graphics& g)
 {
-    g.setColour(ledColour);
-    g.fillEllipse(0, 0, radius, radius);
+    auto width = getWidth();
+    auto height = getHeight();
+    
+    g.setColour(juce::Colours::white);
+    g.drawRect(0, 0, width, height);
+    
+    
+    float alpha = 1.0f;
+    float tempRadius = radius;
+    int i = 1;
+    while (tempRadius <= width){
+        int centerX = width / 2 - tempRadius / 2;
+        int centerY = height / 2 - tempRadius / 2;
+        
+        g.setColour(ledColour.withAlpha(alpha));
+        g.fillEllipse(centerX, centerY, tempRadius, tempRadius);
+        
+        i += 1;
+        alpha = 1.0f / juce::square(i);
+        tempRadius = radius * i;
+    }
 }
 
 void PowerLED::resized()

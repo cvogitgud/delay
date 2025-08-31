@@ -12,7 +12,7 @@
 //==============================================================================
 ProcrastinatorAudioProcessorEditor::ProcrastinatorAudioProcessorEditor (ProcrastinatorAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
-mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DELAYTIME", "Delay"), feedback(audioProcessor.treeState, "FEEDBACK", "Feedback"), rate(audioProcessor.treeState, "RATE", "Rate"), depth(audioProcessor.treeState, "DEPTH", "Depth"), power(audioProcessor.treeState, "POWER"), led(juce::Colours::red, 10.0f)
+mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DELAYTIME", "Delay"), feedback(audioProcessor.treeState, "FEEDBACK", "Feedback"), rate(audioProcessor.treeState, "RATE", "Rate"), depth(audioProcessor.treeState, "DEPTH", "Depth"), power(audioProcessor.treeState, "POWER"), led(juce::Colours::red)
 {
     int width = 300;
     int height = width * 7/5;
@@ -28,6 +28,7 @@ mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DE
     power.getButton().onClick = [this] { togglePowerLED(); };
     
     led.setLEDColour(juce::Colours::red);
+    led.setRadius(10.0f);
     addAndMakeVisible(led);
     
     pedalLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
@@ -67,7 +68,7 @@ void ProcrastinatorAudioProcessorEditor::resized()
     int powerY = getHeight() - powerSwitchHeight - bottomMargin;
     power.setBounds(powerX, powerY, powerSwitchWidth, powerSwitchHeight);
     
-    int ledRadius = 15.0f;
+    int ledRadius = 40.0f;
     int ledX = getWidth() / 2 - ledRadius / 2;
     int ledY = 25;
     led.setBounds(ledX, ledY, ledRadius, ledRadius);

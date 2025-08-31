@@ -18,7 +18,7 @@
 class PowerLED  : public juce::Component
 {
 public:
-    PowerLED(juce::Colour colour, float radius);
+    PowerLED(juce::Colour colour);
     ~PowerLED() override;
 
     void paint (juce::Graphics&) override;
@@ -26,6 +26,7 @@ public:
     void toggleOn();
     void toggleOff();
     void setLEDColour(juce::Colour colour);
+    void setRadius(float radius);
     
     bool hitTest(int x, int y) override;
 
