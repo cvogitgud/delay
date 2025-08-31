@@ -49,21 +49,23 @@ void PowerLED::paint (juce::Graphics& g)
     g.setColour(juce::Colours::white);
     g.drawRect(0, 0, width, height);
     
-    
     float alpha = 1.0f;
     float tempRadius = radius;
-    int i = 1;
+    float i = 1.0f;
+    
+    // Glow Effect
     while (tempRadius <= width){
-        int centerX = width / 2 - tempRadius / 2;
-        int centerY = height / 2 - tempRadius / 2;
+        float centerX = centerHorizontal(width, tempRadius);
+        float centerY = centerVertical(height, tempRadius);
         
         g.setColour(ledColour.withAlpha(alpha));
         g.fillEllipse(centerX, centerY, tempRadius, tempRadius);
         
-        i += 1;
+        i *= 1.15f;
         alpha = 1.0f / juce::square(i);
         tempRadius = radius * i;
     }
+    
 }
 
 void PowerLED::resized()
@@ -77,4 +79,12 @@ bool PowerLED::hitTest(int x, int y){
     bool inXBounds = (0 <= x && x <= radius);
     bool inYBounds = (0 <= y && y <= radius);
     return inXBounds && inYBounds;
+}
+
+float PowerLED::centerHorizontal(float containerWidth, float width){
+    return containerWidth / 2 - width / 2;
+}
+
+float PowerLED::centerVertical(float containerHeight, float height){
+    return containerHeight / 2 - height / 2;
 }

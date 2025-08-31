@@ -36,5 +36,8 @@ private:
     juce::Colour onColour;
     juce::Colour offColour = juce::Colours::black;
     
+    float centerHorizontal(float containerWidth, float width);
+    float centerVertical(float containerHeight, float height);
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PowerLED)
 };
