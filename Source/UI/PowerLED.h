@@ -35,8 +35,6 @@ private:
     float width;
     float height;
     juce::Colour ledColour;
-    juce::Colour onColour;
-    juce::Colour offColour = juce::Colours::black;
     
     bool isOn = true;
     

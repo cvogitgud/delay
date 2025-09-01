@@ -15,7 +15,6 @@
 //==============================================================================
 PowerLED::PowerLED(juce::Colour colour)
 {
-    this->onColour = colour;
     this->ledColour = colour;
 }
 
@@ -33,13 +32,11 @@ void PowerLED::setRadius(float radius){
 
 void PowerLED::toggleOn(){
     this->isOn = true;
-    this->ledColour = onColour;
     this->repaint();
 }
 
 void PowerLED::toggleOff(){
     this->isOn = false;
-    this->ledColour = offColour;
     this->repaint();
 }
 
@@ -48,34 +45,31 @@ void PowerLED::paint (juce::Graphics& g)
     this->width = getWidth();
     this->height = getHeight();
     
-    g.setColour(juce::Colours::white);
-    g.drawRect(0.0f, 0.0f, this->width, this->height);
-    
+    float alpha = 0.95f;
     if (this->isOn){
         createGlow(g);
     }
+    else {
+        alpha = 0.5f;
+    }
     
-    // LED border
-    g.setColour(juce::Colours::black);
+    // LED Border
+    g.setColour(juce::Colours::black.withAlpha(0.75f));
     drawCenteredCircle(g, this->radius + 1.25f);
     
     // LED
-    g.setColour(ledColour);
+    g.setColour(ledColour.withAlpha(alpha));
     drawCenteredCircle(g, this->radius);
 }
 
 void PowerLED::createGlow(juce::Graphics& g){
-    // Start from edge, work inwards
-    float alpha = 0.0f;
     float tempRadius = this->width;
     
-    // optimize: first one technically draws nothing -> adjust starting alpha and radius
-    // optimize: don't need to draw past the groove -> stop at groove radius
     while (tempRadius > radius){
+        tempRadius *= 0.85f;
+        float alpha = 1 / juce::square(tempRadius / this->radius) * 0.5;
         g.setColour(ledColour.withAlpha(alpha));
         drawCenteredCircle(g, tempRadius);
-        tempRadius *= 0.85f;
-        alpha = 1 / juce::square(tempRadius / this->radius);
     }
 }
 
