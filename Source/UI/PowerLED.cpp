@@ -32,40 +32,58 @@ void PowerLED::setRadius(float radius){
 }
 
 void PowerLED::toggleOn(){
+    this->isOn = true;
     this->ledColour = onColour;
     this->repaint();
 }
 
 void PowerLED::toggleOff(){
+    this->isOn = false;
     this->ledColour = offColour;
     this->repaint();
 }
 
 void PowerLED::paint (juce::Graphics& g)
 {
-    auto width = getWidth();
-    auto height = getHeight();
+    this->width = getWidth();
+    this->height = getHeight();
     
     g.setColour(juce::Colours::white);
-    g.drawRect(0, 0, width, height);
+    g.drawRect(0.0f, 0.0f, this->width, this->height);
     
-    float alpha = 1.0f;
-    float tempRadius = radius;
-    float i = 1.0f;
-    
-    // Glow Effect
-    while (tempRadius <= width){
-        float centerX = centerHorizontal(width, tempRadius);
-        float centerY = centerVertical(height, tempRadius);
-        
-        g.setColour(ledColour.withAlpha(alpha));
-        g.fillEllipse(centerX, centerY, tempRadius, tempRadius);
-        
-        i *= 1.15f;
-        alpha = 1.0f / juce::square(i);
-        tempRadius = radius * i;
+    if (this->isOn){
+        createGlow(g);
     }
     
+    // LED border
+    g.setColour(juce::Colours::black);
+    drawCenteredCircle(g, this->radius + 1.25f);
+    
+    // LED
+    g.setColour(ledColour);
+    drawCenteredCircle(g, this->radius);
+}
+
+void PowerLED::createGlow(juce::Graphics& g){
+    // Start from edge, work inwards
+    float alpha = 0.0f;
+    float tempRadius = this->width;
+    
+    // optimize: first one technically draws nothing -> adjust starting alpha and radius
+    // optimize: don't need to draw past the groove -> stop at groove radius
+    while (tempRadius > radius){
+        g.setColour(ledColour.withAlpha(alpha));
+        drawCenteredCircle(g, tempRadius);
+        tempRadius *= 0.85f;
+        alpha = 1 / juce::square(tempRadius / this->radius);
+    }
+}
+
+void PowerLED::drawCenteredCircle(juce::Graphics& g, float radius){
+    float centerX = centerHorizontal(this->width, radius);
+    float centerY = centerVertical(this->height, radius);
+    
+    g.fillEllipse(centerX, centerY, radius, radius);
 }
 
 void PowerLED::resized()

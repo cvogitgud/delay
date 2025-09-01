@@ -58,7 +58,7 @@ public:
     
 private:
     double lastSampleRate;
-    bool powerOn = false;
+    bool isOn = true;
     
     Delay delayLine;
 

@@ -158,7 +158,7 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         auto* channelData = buffer.getWritePointer(channel);
         
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample){
-            if (powerOn){
+            if (isOn){
                 channelData[sample] = delayLine.processSample(channel, channelData[sample]);
             }
         }
@@ -227,7 +227,7 @@ void ProcrastinatorAudioProcessor::updateDepth(){
 }
 
 void ProcrastinatorAudioProcessor::updatePower(){
-    powerOn = treeState.getRawParameterValue("POWER")->load();
+    isOn = treeState.getRawParameterValue("POWER")->load();
 }
 
 //==============================================================================

@@ -32,10 +32,16 @@ public:
 
 private:
     float radius;
+    float width;
+    float height;
     juce::Colour ledColour;
     juce::Colour onColour;
     juce::Colour offColour = juce::Colours::black;
     
+    bool isOn = true;
+    
+    void createGlow(juce::Graphics& g);
+    void drawCenteredCircle(juce::Graphics& g, float radius);
     float centerHorizontal(float containerWidth, float width);
     float centerVertical(float containerHeight, float height);
     
