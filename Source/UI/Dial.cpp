@@ -48,16 +48,16 @@ void Dial::resized()
 {
     int labelWidth = getWidth() / 2;
     int labelHeight = getHeight() * 0.25;
-    int labelXPos = getWidth() / 2 - labelWidth / 2;
-    int labelYPos = 0;
-    label.setBounds(labelXPos, labelYPos, labelWidth, labelHeight);
+    int labelX = getWidth() / 2 - labelWidth / 2;
+    int labelY = 0;
+    label.setBounds(labelX, labelY, labelWidth, labelHeight);
     
     int sliderWidth, sliderHeight;
-    sliderWidth = sliderHeight = getHeight() * 0.65;
-    int sliderXPos = getWidth() / 2 - sliderWidth / 2;
-    int sliderYPos = label.getBottom();
+    sliderWidth = sliderHeight = getHeight() * 0.65 * 1.25;
+    int sliderX = getWidth() / 2 - sliderWidth / 2;
+    int sliderY = label.getBottom();
     
-    slider.setBounds(sliderXPos, sliderYPos, sliderWidth, sliderHeight);
+    slider.setBounds(sliderX, sliderY, sliderWidth, sliderHeight);
 }
 
 bool Dial::hitTest(int x, int y) {
