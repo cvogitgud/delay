@@ -45,7 +45,17 @@ ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
 //==============================================================================
 void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (juce::Colours::darkslateblue);
+    juce::Colour bgColour = juce::Colours::darkslateblue;
+    g.fillAll (bgColour);
+    
+    // Create drop off shadow
+//    int dropoffX = 0;
+//    int dropoffY = pedalLabel.getY();
+//    int dropoffWidth = getWidth();
+//    int dropoffHeight = 5;
+//    juce::Rectangle dropoff = juce::Rectangle<int> (dropoffX, dropoffY, dropoffWidth, dropoffHeight);
+//    g.drawRect(dropoff);
+//    g.fillRect(dropoff);
 }
 
 void ProcrastinatorAudioProcessorEditor::resized()

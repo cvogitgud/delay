@@ -45,20 +45,20 @@ void PowerLED::paint (juce::Graphics& g)
     this->width = getWidth();
     this->height = getHeight();
     
-    float alpha = 0.95f;
+    float ledAlpha = 0.95f;
     if (this->isOn){
         createGlow(g);
     }
     else {
-        alpha = 0.5f;
+        ledAlpha = 0.6f;
     }
     
     // LED Border
-    g.setColour(juce::Colours::black.withAlpha(0.75f));
+    g.setColour(juce::Colours::black.withAlpha(0.60f));
     drawCenteredCircle(g, this->radius + 1.25f);
     
     // LED
-    g.setColour(ledColour.withAlpha(alpha));
+    g.setColour(ledColour.withAlpha(ledAlpha));
     drawCenteredCircle(g, this->radius);
 }
 
