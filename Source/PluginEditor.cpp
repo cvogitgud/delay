@@ -32,7 +32,7 @@ mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DE
     
     ledLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     ledLabel.setJustificationType(juce::Justification::centred);
-    ledLabel.setFont(juce::FontOptions(8.0f));
+    ledLabel.setFont(juce::FontOptions(9.0f));
     ledLabel.setText(ledName, juce::dontSendNotification);
     addAndMakeVisible(ledLabel);
     
@@ -68,6 +68,21 @@ void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 
 void ProcrastinatorAudioProcessorEditor::resized()
 {
+    renderDials();
+    renderPowerSwitch();
+    renderLED();
+}
+
+void ProcrastinatorAudioProcessorEditor::togglePowerLED(){
+    if (power.getButton().getToggleState() == true){
+        led.toggleOn();
+    }
+    else{
+        led.toggleOff();
+    }
+}
+
+void ProcrastinatorAudioProcessorEditor::renderDials(){
     int dialWidth = getWidth() / 3;
     int dialHeight = getHeight() / 5;
     
@@ -78,14 +93,18 @@ void ProcrastinatorAudioProcessorEditor::resized()
     mix.setBounds(0, bottomRowY, dialWidth, dialHeight);
     delay.setBounds(mix.getRight(), bottomRowY, dialWidth, dialHeight);
     feedback.setBounds(delay.getRight(), bottomRowY, dialWidth, dialHeight);
-    
+}
+
+void ProcrastinatorAudioProcessorEditor::renderPowerSwitch(){
     int bottomMargin = 20;
     int powerSwitchWidth = getWidth() * 0.75;
     int powerSwitchHeight = getHeight() * 0.35;
     int powerX = getWidth() / 2 - powerSwitchWidth / 2;
     int powerY = getHeight() - powerSwitchHeight - bottomMargin;
     power.setBounds(powerX, powerY, powerSwitchWidth, powerSwitchHeight);
-    
+}
+
+void ProcrastinatorAudioProcessorEditor::renderLED(){
     int ledRadius = 40.0f;
     int ledX = getWidth() / 2 - ledRadius / 2;
     int ledY = 25;
@@ -98,17 +117,8 @@ void ProcrastinatorAudioProcessorEditor::resized()
     ledLabel.setBounds(ledLabelX, ledLabelY, ledLabelWidth, ledLabelHeight);
     
     int labelWidth = getWidth();
-    int labelHeight = powerY - mix.getBottom();
+    int labelHeight = power.getY() - mix.getBottom();
     int labelX = getWidth() / 2 - labelWidth / 2;
     int labelY = mix.getBottom();
     pedalLabel.setBounds(labelX, labelY, labelWidth, labelHeight);
-}
-
-void ProcrastinatorAudioProcessorEditor::togglePowerLED(){
-    if (power.getButton().getToggleState() == true){
-        led.toggleOn();
-    }
-    else{
-        led.toggleOff();
-    }
 }
