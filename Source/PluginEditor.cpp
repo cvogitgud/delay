@@ -45,7 +45,10 @@ ProcrastinatorAudioProcessorEditor::~ProcrastinatorAudioProcessorEditor()
 void ProcrastinatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
     juce::Colour bgColour = juce::Colours::darkslateblue;
-    g.fillAll (bgColour);
+    
+    juce::ColourGradient cg = juce::ColourGradient::vertical(bgColour.darker(0.0), 10, bgColour.darker(1.0f), 0);
+    g.setGradientFill(cg);
+    g.fillAll ();
     
     // Create drop off shadow
 //    int dropoffX = 0;
