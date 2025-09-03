@@ -42,6 +42,9 @@ private:
     PowerSwitch power;
     PowerLED led;
     
+    juce::String ledName = "Power";
+    juce::Label ledLabel {"LEDLABEL", ledName};
+    
     juce::String pedalName = "Replicator";
     juce::Label pedalLabel {"PEDALLABEL", pedalName};
 

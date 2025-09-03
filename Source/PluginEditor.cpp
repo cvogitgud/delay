@@ -30,6 +30,12 @@ mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DE
     led.setRadius(10.0f);
     addAndMakeVisible(led);
     
+    ledLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    ledLabel.setJustificationType(juce::Justification::centred);
+    ledLabel.setFont(juce::FontOptions(8.0f));
+    ledLabel.setText(ledName, juce::dontSendNotification);
+    addAndMakeVisible(ledLabel);
+    
     pedalLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     pedalLabel.setJustificationType(juce::Justification::centred);
     pedalLabel.setFont(juce::FontOptions(30.0f));
@@ -84,6 +90,12 @@ void ProcrastinatorAudioProcessorEditor::resized()
     int ledX = getWidth() / 2 - ledRadius / 2;
     int ledY = 25;
     led.setBounds(ledX, ledY, ledRadius, ledRadius);
+    
+    int ledLabelWidth = 40;
+    int ledLabelHeight = 20;
+    int ledLabelX = led.getX();
+    int ledLabelY = led.getY() - 5;
+    ledLabel.setBounds(ledLabelX, ledLabelY, ledLabelWidth, ledLabelHeight);
     
     int labelWidth = getWidth();
     int labelHeight = powerY - mix.getBottom();

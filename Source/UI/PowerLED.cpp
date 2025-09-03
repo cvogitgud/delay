@@ -60,6 +60,16 @@ void PowerLED::paint (juce::Graphics& g)
     // LED
     g.setColour(ledColour.withAlpha(ledAlpha));
     drawCenteredCircle(g, this->radius);
+    
+    g.setColour(juce::Colours::white.withAlpha(ledAlpha - 0.15f));
+    createHighlight(g);
+}
+
+void PowerLED::createHighlight(juce::Graphics& g){
+    int radius = 3;
+    float posX = centerHorizontal(this->width, radius) + 2;
+    float posY = centerVertical(this->height, radius) - 2;
+    g.fillEllipse(posX, posY, radius, radius);
 }
 
 void PowerLED::createGlow(juce::Graphics& g){

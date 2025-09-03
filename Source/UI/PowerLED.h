@@ -39,9 +39,11 @@ private:
     bool isOn = true;
     
     void createGlow(juce::Graphics& g);
+    void createHighlight(juce::Graphics& g);
     void drawCenteredCircle(juce::Graphics& g, float radius);
     float centerHorizontal(float containerWidth, float width);
     float centerVertical(float containerHeight, float height);
+    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PowerLED)
 };
