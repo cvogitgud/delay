@@ -27,7 +27,6 @@ mix(audioProcessor.treeState, "MIX", "Mix"), delay(audioProcessor.treeState, "DE
     addAndMakeVisible(power);
     power.getButton().onClick = [this] { togglePowerLED(); };
     
-    led.setLEDColour(juce::Colours::red);
     led.setRadius(10.0f);
     addAndMakeVisible(led);
     

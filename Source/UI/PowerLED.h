@@ -31,7 +31,7 @@ public:
     bool hitTest(int x, int y) override;
 
 private:
-    float radius;
+    float radius = 10.0f;
     float width;
     float height;
     juce::Colour ledColour;
