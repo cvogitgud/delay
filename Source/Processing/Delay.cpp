@@ -59,7 +59,13 @@ float Delay::processSample(int channel, float input){
         channelState->delayIndex = 0;
     }
     
-    float output = (1.0f - mix) * input + mix * delayOutput;
+    float output = 0.0f;
+    if (mix <= 0.5){
+        output = input + mix * delayOutput;
+    }
+    else {
+        output = (1.0f - mix) * input + mix * delayOutput;
+    }
     return limitOutput(output);
 }
 
