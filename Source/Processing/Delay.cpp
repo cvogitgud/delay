@@ -49,7 +49,10 @@ float Delay::processSample(int channel, float input){
     float lfoValue = channelState->lfo.processSample(0.0f);
     int modulationLength = (int)(lfoValue * convertMStoSample(depth));
     
-    int delayLength = limitDelayLength(centerDelayLength + modulationLength);
+    float targetLength = (float) limitDelayLength(centerDelayLength + modulationLength);
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> smoothedVal;
+    smoothedVal.setTargetValue(targetLength);
+    int delayLength = smoothedVal.getNextValue();
     
     channelState->delayIndex++;
     if (channelState->delayIndex >= delayLength){
