@@ -18,7 +18,8 @@
 
 typedef struct {
     int channel;
-    int delayIndex; // index within delayBuffer
+    int delayIndex;
+    juce::dsp::Oscillator<float> lfo;
 } ChannelState;
 
 class Delay {
@@ -49,7 +50,7 @@ private:
     float mix = 0.5f;
     float feedback = 0.0f;
     
-    juce::dsp::Oscillator<float> lfo;
+    
     float rate = 0.0f;
     int depth = 0; // in ms
     

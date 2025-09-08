@@ -22,6 +22,9 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
     for (int channel = 0; channel < numChannels; ++channel){
         channelStates[channel].channel = channel;
         channelStates[channel].delayIndex = 0;
+        channelStates[channel].lfo.prepare(spec);
+        channelStates[channel].lfo.initialise([](float x) { return sin(x); });
+        channelStates[channel].lfo.setFrequency(rate);
     }
     
     this->centerDelayLength = (int)(sampleRate / 2);
@@ -29,11 +32,6 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
 
     delayBuffer.setSize(numChannels, maxDelayLength);
     delayBuffer.clear();
-    
-    lfo.prepare(spec);
-    lfo.initialise([](float x) { return sin(x); });
-    
-    lfo.setFrequency(rate);
     
     this->isPrepared = true;
 }
@@ -48,7 +46,7 @@ float Delay::processSample(int channel, float input){
     float delayInput = input + delayOutput * feedback;
     delayBuffer.setSample(channelState->channel, channelState->delayIndex, delayInput);
     
-    float lfoValue = lfo.processSample(0.0f);
+    float lfoValue = channelState->lfo.processSample(0.0f);
     int modulationLength = (int)(lfoValue * convertMStoSample(depth));
     
     int delayLength = limitDelayLength(centerDelayLength + modulationLength);
@@ -58,6 +56,7 @@ float Delay::processSample(int channel, float input){
         channelState->delayIndex -= delayLength;
     }
     
+    // full dry signal <= 50% wet, true dry/wet ratio > 50%
     float output = 0.0f;
     if (mix <= 0.5){
         output = input + mix * delayOutput;
@@ -98,7 +97,11 @@ void Delay::setRate(const float rate){
     jassert(isPrepared);
     
     this->rate = rate;
-    lfo.setFrequency(rate);
+    
+    for (int channel = 0; channel < channelStates.size(); channel++){
+        channelStates[channel].lfo.setFrequency(rate);
+    }
+    
 }
 
 void Delay::setDepth(const int depth){
@@ -127,9 +130,9 @@ void Delay::reset(){
     
     for (int channel = 0; channel < channelStates.size(); ++channel){
         channelStates[channel].delayIndex = 0;
+        channelStates[channel].lfo.reset();
     }
     
-    lfo.reset();
 }
 
 int Delay::limitDelayLength(int delayLength){
