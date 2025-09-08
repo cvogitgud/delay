@@ -51,12 +51,11 @@ float Delay::processSample(int channel, float input){
     float lfoValue = lfo.processSample(0.0f);
     int modulationLength = (int)(lfoValue * convertMStoSample(depth));
     
-    int delayLength = centerDelayLength + modulationLength;
-    delayLength = limitDelayLength(delayLength);
+    int delayLength = limitDelayLength(centerDelayLength + modulationLength);
     
     channelState->delayIndex++;
     if (channelState->delayIndex >= delayLength){
-        channelState->delayIndex = 0;
+        channelState->delayIndex -= delayLength;
     }
     
     float output = 0.0f;
