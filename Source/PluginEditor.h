@@ -47,6 +47,10 @@ private:
     
     juce::String pedalName = "Replicator";
     juce::Label pedalLabel {"PEDALLABEL", pedalName};
+    
+    void renderDials();
+    void renderPowerSwitch();
+    void renderLED();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessorEditor)
 };
