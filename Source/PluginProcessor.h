@@ -56,17 +56,19 @@ public:
 
     juce::AudioProcessorValueTreeState treeState;
     
+    static juce::String paramDelay;
+    static juce::String paramMix;
+    static juce::String paramFeedback;
+    static juce::String paramRate;
+    static juce::String paramDepth;
+    static juce::String paramPower;
+    
 private:
     double lastSampleRate;
     bool isOn = true;
     
     Delay delayLine;
-
-    void updateDelayLength();
-    void updateMix();
-    void updateFeedback();
-    void updateRate();
-    void updateDepth();
+    
     void updatePower();
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
