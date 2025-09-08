@@ -228,6 +228,9 @@ void ProcrastinatorAudioProcessor::updateDepth(){
 
 void ProcrastinatorAudioProcessor::updatePower(){
     isOn = treeState.getRawParameterValue("POWER")->load();
+    if (!isOn){
+        delayLine.clearDelayLine();
+    }
 }
 
 //==============================================================================

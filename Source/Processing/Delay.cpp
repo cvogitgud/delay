@@ -103,6 +103,10 @@ void Delay::setDepth(const int depth){
     this->depth = depth;
 }
 
+void Delay::clearDelayLine(){
+    delayBuffer.clear();
+}
+
 void Delay::reset(){
     
     jassert(isPrepared);

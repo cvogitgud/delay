@@ -32,6 +32,8 @@ public:
     void setRate(const float rate);
     void setDepth(const int depth);
     
+    void clearDelayLine();
+    
     void reset();
     
 private:
