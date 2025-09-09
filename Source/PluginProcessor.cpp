@@ -9,13 +9,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-juce::String ProcrastinatorAudioProcessor::paramDelay ("DELAYTIME");
-juce::String ProcrastinatorAudioProcessor::paramMix ("MIX");
-juce::String ProcrastinatorAudioProcessor::paramFeedback ("FEEDBACK");
-juce::String ProcrastinatorAudioProcessor::paramRate ("RATE");
-juce::String ProcrastinatorAudioProcessor::paramDepth ("DEPTH");
-juce::String ProcrastinatorAudioProcessor::paramPower ("POWER");
-
 //==============================================================================
 ProcrastinatorAudioProcessor::ProcrastinatorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations

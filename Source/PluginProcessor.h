@@ -56,12 +56,12 @@ public:
 
     juce::AudioProcessorValueTreeState treeState;
     
-    static juce::String paramDelay;
-    static juce::String paramMix;
-    static juce::String paramFeedback;
-    static juce::String paramRate;
-    static juce::String paramDepth;
-    static juce::String paramPower;
+    juce::String paramDelay    { "DELAYTIME" };
+    juce::String paramMix      { "MIX" };
+    juce::String paramFeedback { "FEEDBACK" };
+    juce::String paramRate     { "RATE" };
+    juce::String paramDepth    { "DEPTH" };
+    juce::String paramPower    { "POWER" };
     
 private:
     double lastSampleRate;
