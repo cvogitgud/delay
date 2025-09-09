@@ -22,12 +22,12 @@ ProcrastinatorAudioProcessor::ProcrastinatorAudioProcessor()
                        ), treeState(*this, nullptr, "PARAMETERS", createParameterLayout())
 #endif
 {
-    treeState.addParameterListener("DELAYTIME", this);
-    treeState.addParameterListener("MIX", this);
-    treeState.addParameterListener("FEEDBACK", this);
-    treeState.addParameterListener("RATE", this);
-    treeState.addParameterListener("DEPTH", this);
-    treeState.addParameterListener("POWER", this);
+    treeState.addParameterListener(paramDelay, this);
+    treeState.addParameterListener(paramMix, this);
+    treeState.addParameterListener(paramFeedback, this);
+    treeState.addParameterListener(paramRate, this);
+    treeState.addParameterListener(paramDepth, this);
+    treeState.addParameterListener(paramPower, this);
 }
 
 ProcrastinatorAudioProcessor::~ProcrastinatorAudioProcessor()
@@ -187,41 +187,37 @@ juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor
     return {params.begin(), params.end()};
 }
 
-void ProcrastinatorAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue){
-    // should use newValue instead of getting from tree?
-    updateParameters();
+void ProcrastinatorAudioProcessor::parameterChanged(const juce::String &parameterId, float newValue){
+    if (parameterId == paramDelay){
+        delayLine.setDelayLength(newValue);
+    }
+    else if (parameterId == paramMix){
+        delayLine.setMix(newValue);
+    }
+    else if (parameterId == paramFeedback){
+        delayLine.setFeedback(newValue);
+    }
+    else if (parameterId == paramRate){
+        delayLine.setRate(newValue);
+    }
+    else if (parameterId == paramDepth){
+        delayLine.setDepth(newValue);
+    }
 }
 
 void ProcrastinatorAudioProcessor::updateParameters(){
-    updateDelayLength();
-    updateMix();
-    updateFeedback();
-    updateRate();
-    updateDepth();
-    updatePower();
-}
-
-void ProcrastinatorAudioProcessor::updateDelayLength(){
     int delayTime_ms = treeState.getRawParameterValue("DELAYTIME")->load();
     delayLine.setDelayLength(delayTime_ms);
-}
-
-void ProcrastinatorAudioProcessor::updateMix(){
+    
     float mix = treeState.getRawParameterValue("MIX")->load();
     delayLine.setMix(mix);
-}
-
-void ProcrastinatorAudioProcessor::updateFeedback(){
+    
     float feedback = treeState.getRawParameterValue("FEEDBACK")->load();
     delayLine.setFeedback(feedback);
-}
-
-void ProcrastinatorAudioProcessor::updateRate(){
+    
     float rate = treeState.getRawParameterValue("RATE")->load();
     delayLine.setRate(rate);
-}
-
-void ProcrastinatorAudioProcessor::updateDepth(){
+    
     int depth = treeState.getRawParameterValue("DEPTH")->load();
     delayLine.setDepth(depth);
 }

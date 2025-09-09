@@ -47,12 +47,10 @@ private:
     int centerDelayLength;
     int maxDelayLength;
     
-    float mix = 0.5f;
+    float mix      = 0.5f;
     float feedback = 0.0f;
-    
-    
-    float rate = 0.0f;
-    int depth = 0; // in ms
+    float rate     = 0.0f;
+    int   depth    = 0; // in ms
     
     int limitDelayLength(int delayLength);
     int convertMStoSample(const int time);
