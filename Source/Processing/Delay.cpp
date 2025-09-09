@@ -11,16 +11,12 @@
 #include "Delay.h"
 
 void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels){
-    this->lastSampleRate = sampleRate;
+    lastSampleRate = sampleRate;
     
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = numChannels;
     spec.maximumBlockSize = samplesPerBlock;
-    
-    mix.reset(sampleRate, 0.02);
-    feedback.reset(sampleRate, 0.02);
-    rate.reset(sampleRate, 0.02);
     
     channelStates.resize(numChannels);
     for (int channel = 0; channel < numChannels; ++channel){
@@ -31,14 +27,37 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
         channelStates[channel].lfo.setFrequency(rate.getNextValue());
     }
     
-    centerDelayLength = (int)(sampleRate / 2);
-    delayLength.reset(sampleRate, 0.02);
     maxDelayLength = (int)sampleRate;
 
     delayBuffer.setSize(numChannels, maxDelayLength);
     delayBuffer.clear();
     
-    this->isPrepared = true;
+    isPrepared = true;
+    
+    reset();
+}
+
+void Delay::reset(){
+    
+    mix = DEFAULT_MIX;
+    feedback = DEFAULT_FEEDBACK;
+    rate = DEFAULT_RATE;
+    depth = DEFAULT_DEPTH;
+    
+    dryGain.reset(lastSampleRate, 0.02);
+    wetGain.reset(lastSampleRate, 0.02);
+    feedback.reset(lastSampleRate, 0.02);
+    rate.reset(lastSampleRate, 0.02);
+    
+    centerDelayLength = (int) lastSampleRate / 2;
+    delayLength.reset(lastSampleRate, 0.02);
+    delayBuffer.clear();
+    
+    for (int channel = 0; channel < channelStates.size(); ++channel){
+        channelStates[channel].delayIndex = 0;
+        channelStates[channel].lfo.reset();
+    }
+    
 }
 
 float Delay::processSample(int channel, float input){
@@ -61,14 +80,11 @@ float Delay::processSample(int channel, float input){
         channelState->delayIndex -= delayLength.getNextValue();
     }
     
-    // full dry signal <= 50% wet, true dry/wet ratio > 50%
-    float output = 0.0f;
-    if (mix.getNextValue() <= 0.5){
-        output = input + mix.getNextValue() * delayOutput;
-    }
-    else {
-        output = (1.0f - mix.getNextValue()) * input + mix.getNextValue() * delayOutput;
-    }
+    // Balanced Dry/Wet Mixing Rule
+    dryGain.setTargetValue(2.0f * juce::jmin(0.5f, 1.0f - mix));
+    wetGain.setTargetValue(2.0f * juce::jmin(0.5f, mix));
+    float output = dryGain.getNextValue() * input + wetGain.getNextValue() * delayOutput;
+    
     return limitOutput(output);
 }
 
@@ -98,28 +114,28 @@ void Delay::setDelayLength(const int delayTime_ms){
     }
 }
 
-void Delay::setMix(const float mix){
+void Delay::setMix(const float newValue){
     
     jassert(isPrepared);
     
-    this->mix.setTargetValue(mix);
+    this->mix = newValue;
 }
 
-void Delay::setFeedback(const float feedback){
+void Delay::setFeedback(const float newValue){
     
     jassert(isPrepared);
     
-    this->feedback.setTargetValue(feedback);
+    this->feedback.setTargetValue(newValue);
 }
 
-void Delay::setRate(const float rate){
+void Delay::setRate(const float newValue){
     
     jassert(isPrepared);
     
-    this->rate.setTargetValue(rate);
+    this->rate.setTargetValue(newValue);
     
     for (int channel = 0; channel < channelStates.size(); channel++){
-        channelStates[channel].lfo.setFrequency(rate);
+        channelStates[channel].lfo.setFrequency(rate.getNextValue());
     }
     
 }
@@ -133,25 +149,6 @@ void Delay::setDepth(const int depth){
 
 void Delay::clearDelayLine(){
     delayBuffer.clear();
-}
-
-void Delay::reset(){
-    jassert(isPrepared);
-    
-    this->mix = DEFAULT_MIX;
-    this->feedback = DEFAULT_FEEDBACK;
-    this->rate = DEFAULT_RATE;
-    this->depth = DEFAULT_DEPTH;
-    this->mix = DEFAULT_MIX;
-    
-    this->centerDelayLength = lastSampleRate / 2;
-    delayBuffer.clear();
-    
-    for (int channel = 0; channel < channelStates.size(); ++channel){
-        channelStates[channel].delayIndex = 0;
-        channelStates[channel].lfo.reset();
-    }
-    
 }
 
 //-----------------------------------------------------------------------------

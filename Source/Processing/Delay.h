@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 #define DEFAULT_MIX 0.5
 #define DEFAULT_FEEDBACK 0.5
-#define DEFAULT_RATE 0.0
+#define DEFAULT_RATE 0.01f
 #define DEFAULT_DEPTH 0.0
 
 typedef struct {
@@ -25,6 +25,7 @@ typedef struct {
 class Delay {
 public:
     void prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels);
+    void reset();
     float processSample(int channel, float sample);
     
     void setDelayLength(const int delayTime_ms);
@@ -34,9 +35,6 @@ public:
     void setDepth(const int depth);
     
     void clearDelayLine();
-    
-    void reset();
-    
 private:
     bool isPrepared { false };
     double lastSampleRate;
@@ -48,9 +46,11 @@ private:
     juce::SmoothedValue<float> delayLength;
     int maxDelayLength;
     
-    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix { DEFAULT_MIX };
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> dryGain, wetGain;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> feedback { DEFAULT_FEEDBACK };
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> rate { 0.01f };
+    
+    float mix = DEFAULT_MIX;
     int depth = DEFAULT_DEPTH; // in ms
     
     float readFromBuffer(ChannelState* channelState);
