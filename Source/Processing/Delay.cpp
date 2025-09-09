@@ -89,11 +89,24 @@ float Delay::processSample(int channel, float input){
 }
 
 float Delay::readFromBuffer(ChannelState* channelState){
-//    size_t i = static_cast<size_t> (channelState->delayIndex);
-//    float belowSample = delayBuffer.getSample(channelState->channel, i);
-//    float aboveSample = delayBuffer.getSample(channelState->channel, i+1);
-//    float delayOutput = lerp(belowSample, aboveSample, channelState->delayIndex - 1);
+
+//    return interpolateSample(channelState);
     return delayBuffer.getSample(channelState->channel, channelState->delayIndex);
+}
+
+float Delay::interpolateSample(ChannelState* channelState){
+    size_t index1 = static_cast<size_t> (std::floor (channelState->delayIndex));
+    size_t index2 = index1 + 1;
+    
+    if (index2 >= maxDelayLength){
+        index1 %= maxDelayLength;
+        index2 %= maxDelayLength;
+    }
+    
+    auto value1 = delayBuffer.getSample (channelState->channel, index1);
+    auto value2 = delayBuffer.getSample (channelState->channel, index2);
+
+    return value1 + (channelState->delayIndex - 1) * (value2 - value1);
 }
 
 void Delay::writeToBuffer(ChannelState* channelState, float input){

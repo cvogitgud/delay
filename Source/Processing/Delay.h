@@ -46,6 +46,8 @@ private:
     juce::SmoothedValue<float> delayLength;
     int maxDelayLength;
     
+    float interpolateSample(ChannelState* channelState);
+    
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> dryGain, wetGain;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> feedback { DEFAULT_FEEDBACK };
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> rate { 0.01f };
