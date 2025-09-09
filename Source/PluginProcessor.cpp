@@ -168,11 +168,11 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
 juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor::createParameterLayout(){
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     
-    auto delayTime_ms = std::make_unique<juce::AudioParameterInt>(juce::ParameterID("DELAYTIME", 1), "Delay", 0, 1000, 500);
+    auto delayTime_ms = std::make_unique<juce::AudioParameterInt>(juce::ParameterID("DELAYTIME", 1), "Delay", 1, 1000, 500);
     auto mix = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("MIX", 1), "Mix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f);
     auto feedback = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("FEEDBACK", 1), "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.0f);
     
-    auto rate = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("RATE", 1), "Rate", juce::NormalisableRange<float>(0.0f, 10.0f), 0.0f);
+    auto rate = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("RATE", 1), "Rate", juce::NormalisableRange<float>(0.01f, 10.0f), 0.0f);
     auto depth = std::make_unique<juce::AudioParameterInt>(juce::ParameterID("DEPTH", 1), "Depth", 0, 10, 0);
     
     auto power = std::make_unique<juce::AudioParameterBool>(juce::ParameterID("POWER", 1), "Power", true);
@@ -202,6 +202,9 @@ void ProcrastinatorAudioProcessor::parameterChanged(const juce::String &paramete
     }
     else if (parameterId == paramDepth){
         delayLine.setDepth(newValue);
+    }
+    else if (parameterId == paramPower){
+        updatePower();
     }
 }
 

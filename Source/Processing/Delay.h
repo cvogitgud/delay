@@ -45,12 +45,13 @@ private:
     
     juce::AudioBuffer<float> delayBuffer;
     int centerDelayLength;
+    juce::SmoothedValue<float> delayLength;
     int maxDelayLength;
     
-    float mix      = 0.5f;
-    float feedback = 0.0f;
-    float rate     = 0.0f;
-    int   depth    = 0; // in ms
+    juce::SmoothedValue<float> mix { DEFAULT_MIX };
+    juce::SmoothedValue<float> feedback { DEFAULT_FEEDBACK };
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> rate { 0.01f };
+    int depth = DEFAULT_DEPTH; // in ms
     
     int limitDelayLength(int delayLength);
     int convertMStoSample(const int time);
