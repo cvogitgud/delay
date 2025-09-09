@@ -168,7 +168,7 @@ void ProcrastinatorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
 juce::AudioProcessorValueTreeState::ParameterLayout ProcrastinatorAudioProcessor::createParameterLayout(){
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     
-    auto delayTime_ms = std::make_unique<juce::AudioParameterInt>(juce::ParameterID("DELAYTIME", 1), "Delay", 1, 1000, 500);
+    auto delayTime_ms = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("DELAYTIME", 1), "Delay", juce::NormalisableRange<float>(1.0f, 1000.0f), 500.0f);
     auto mix = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("MIX", 1), "Mix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f);
     auto feedback = std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("FEEDBACK", 1), "Feedback", juce::NormalisableRange<float>(0.0f, 0.95f), 0.0f);
     
@@ -209,7 +209,7 @@ void ProcrastinatorAudioProcessor::parameterChanged(const juce::String &paramete
 }
 
 void ProcrastinatorAudioProcessor::updateParameters(){
-    int delayTime_ms = treeState.getRawParameterValue("DELAYTIME")->load();
+    float delayTime_ms = treeState.getRawParameterValue("DELAYTIME")->load();
     delayLine.setDelayLength(delayTime_ms);
     
     float mix = treeState.getRawParameterValue("MIX")->load();

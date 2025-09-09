@@ -46,17 +46,15 @@ float Delay::processSample(int channel, float input){
     jassert (isPrepared);
     
     ChannelState* channelState = &channelStates[channel];
-
-    float delayOutput = delayBuffer.getSample(channelState->channel, channelState->delayIndex);
-    float delayInput = input + delayOutput * feedback.getNextValue();
-    delayBuffer.setSample(channelState->channel, channelState->delayIndex, delayInput);
+    
+    float delayOutput = readFromBuffer(channelState);
+    writeToBuffer(channelState, input);
     
     float lfoValue = channelState->lfo.processSample(0.0f);
-    int modulationLength = (int)(lfoValue * convertMStoSample(depth));
+    float modulationLength = lfoValue * convertMStoSample(depth);
     
-    float targetLength = (float) limitDelayLength(centerDelayLength + modulationLength);
+    float targetLength = limitDelayLength(centerDelayLength + modulationLength);
     delayLength.setTargetValue(targetLength);
-//    int delayLen = targetLength;
     
     channelState->delayIndex++;
     if (channelState->delayIndex >= delayLength.getNextValue()){
@@ -72,6 +70,20 @@ float Delay::processSample(int channel, float input){
         output = (1.0f - mix.getNextValue()) * input + mix.getNextValue() * delayOutput;
     }
     return limitOutput(output);
+}
+
+float Delay::readFromBuffer(ChannelState* channelState){
+//    size_t i = static_cast<size_t> (channelState->delayIndex);
+//    float belowSample = delayBuffer.getSample(channelState->channel, i);
+//    float aboveSample = delayBuffer.getSample(channelState->channel, i+1);
+//    float delayOutput = lerp(belowSample, aboveSample, channelState->delayIndex - 1);
+    return delayBuffer.getSample(channelState->channel, channelState->delayIndex);
+}
+
+void Delay::writeToBuffer(ChannelState* channelState, float input){
+    float delayOutput = readFromBuffer(channelState);
+    float delayInput = input + delayOutput * feedback.getNextValue();
+    delayBuffer.setSample(channelState->channel, channelState->delayIndex, delayInput);
 }
 
 void Delay::setDelayLength(const int delayTime_ms){
@@ -124,7 +136,6 @@ void Delay::clearDelayLine(){
 }
 
 void Delay::reset(){
-    
     jassert(isPrepared);
     
     this->mix = DEFAULT_MIX;
@@ -143,6 +154,18 @@ void Delay::reset(){
     
 }
 
+//-----------------------------------------------------------------------------
+// Utility
+//-----------------------------------------------------------------------------
+float Delay::convertMStoSample(const float time){
+    return 0.001f * time * lastSampleRate;
+}
+
+float Delay::lerp(float a, float b, float f)
+{
+    return a * (1.0 - f) + (b * f);
+}
+
 int Delay::limitDelayLength(int delayLength){
     
     int result = delayLength;
@@ -153,10 +176,6 @@ int Delay::limitDelayLength(int delayLength){
         result = maxDelayLength;
     }
     return result;
-}
-
-int Delay::convertMStoSample(const int time){
-    return (unsigned int) (0.001f * time * lastSampleRate);
 }
 
 float Delay::limitOutput(float value){
@@ -175,3 +194,4 @@ float Delay::limitOutput(float value){
     
     return output;
 }
+

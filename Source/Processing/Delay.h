@@ -18,7 +18,7 @@
 
 typedef struct {
     int channel;
-    int delayIndex;
+    float delayIndex;
     juce::dsp::Oscillator<float> lfo;
 } ChannelState;
 
@@ -38,7 +38,7 @@ public:
     void reset();
     
 private:
-    bool isPrepared {false};
+    bool isPrepared { false };
     double lastSampleRate;
     
     std::vector<ChannelState> channelStates;
@@ -48,12 +48,21 @@ private:
     juce::SmoothedValue<float> delayLength;
     int maxDelayLength;
     
-    juce::SmoothedValue<float> mix { DEFAULT_MIX };
-    juce::SmoothedValue<float> feedback { DEFAULT_FEEDBACK };
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix { DEFAULT_MIX };
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> feedback { DEFAULT_FEEDBACK };
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> rate { 0.01f };
     int depth = DEFAULT_DEPTH; // in ms
     
+    float readFromBuffer(ChannelState* channelState);
+    void writeToBuffer(ChannelState* channelState, float input);
+    
+    //-----------------------------------------------------------------------------
+    // Utility
+    //-----------------------------------------------------------------------------
+    float convertMStoSample(const float time);
+    float lerp(float a, float b, float f);
     int limitDelayLength(int delayLength);
-    int convertMStoSample(const int time);
     float limitOutput(float value);
 };
+
+
