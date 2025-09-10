@@ -75,12 +75,9 @@ float Delay::processSample(int channel, float input){
     delayLength.setTargetValue(limitDelayLength(centerDelayLength + modulationLength));
     
     channelState->delayIndex++;
-//    DBG("delay length: " << delayLength.getNextValue());
-//    DBG("delayIndex before wrapping: " << channelState->delayIndex);
     if (channelState->delayIndex >= delayLength.getNextValue()){
         channelState->delayIndex -= delayLength.getNextValue();
     }
-//    DBG("delayIndex after wrapping: " << channelState->delayIndex);
 
     // Balanced Dry/Wet Mixing Rule
     dryGain.setTargetValue(2.0f * juce::jmin(0.5f, 1.0f - mix));
