@@ -18,7 +18,7 @@
 
 typedef struct {
     int channel;
-    float delayIndex;
+    int delayIndex;
     juce::dsp::Oscillator<float> lfo;
 } ChannelState;
 
@@ -61,7 +61,7 @@ private:
     //-----------------------------------------------------------------------------
     // Utility
     //-----------------------------------------------------------------------------
-    float convertMStoSample(const float time);
+    int convertMStoSample(const int time);
     float lerp(float a, float b, float f);
     int limitDelayLength(int delayLength);
     float limitOutput(float value);

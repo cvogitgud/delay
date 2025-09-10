@@ -29,7 +29,7 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
     
     maxDelayLength = (int)sampleRate;
 
-    delayBuffer.setSize(numChannels, maxDelayLength);
+    delayBuffer.setSize(numChannels, maxDelayLength + 2);
     delayBuffer.clear();
     
     isPrepared = true;
@@ -71,15 +71,17 @@ float Delay::processSample(int channel, float input){
     
     float lfoValue = channelState->lfo.processSample(0.0f);
     float modulationLength = lfoValue * convertMStoSample(depth);
-    
-    float targetLength = limitDelayLength(centerDelayLength + modulationLength);
-    delayLength.setTargetValue(targetLength);
+
+    delayLength.setTargetValue(limitDelayLength(centerDelayLength + modulationLength));
     
     channelState->delayIndex++;
+    DBG("delay length: " << delayLength.getNextValue());
+    DBG("delayIndex before wrapping: " << channelState->delayIndex);
     if (channelState->delayIndex >= delayLength.getNextValue()){
         channelState->delayIndex -= delayLength.getNextValue();
     }
-    
+    DBG("delayIndex after wrapping: " << channelState->delayIndex);
+
     // Balanced Dry/Wet Mixing Rule
     dryGain.setTargetValue(2.0f * juce::jmin(0.5f, 1.0f - mix));
     wetGain.setTargetValue(2.0f * juce::jmin(0.5f, mix));
@@ -92,6 +94,12 @@ float Delay::readFromBuffer(ChannelState* channelState){
 
 //    return interpolateSample(channelState);
     return delayBuffer.getSample(channelState->channel, channelState->delayIndex);
+}
+
+void Delay::writeToBuffer(ChannelState* channelState, float input){
+    float delayOutput = readFromBuffer(channelState);
+    float delayInput = input + delayOutput * feedback.getNextValue();
+    delayBuffer.setSample(channelState->channel, channelState->delayIndex, delayInput);
 }
 
 float Delay::interpolateSample(ChannelState* channelState){
@@ -107,12 +115,6 @@ float Delay::interpolateSample(ChannelState* channelState){
     auto value2 = delayBuffer.getSample (channelState->channel, index2);
 
     return value1 + (channelState->delayIndex - 1) * (value2 - value1);
-}
-
-void Delay::writeToBuffer(ChannelState* channelState, float input){
-    float delayOutput = readFromBuffer(channelState);
-    float delayInput = input + delayOutput * feedback.getNextValue();
-    delayBuffer.setSample(channelState->channel, channelState->delayIndex, delayInput);
 }
 
 void Delay::setDelayLength(const int delayTime_ms){
@@ -167,8 +169,8 @@ void Delay::clearDelayLine(){
 //-----------------------------------------------------------------------------
 // Utility
 //-----------------------------------------------------------------------------
-float Delay::convertMStoSample(const float time){
-    return 0.001f * time * lastSampleRate;
+int Delay::convertMStoSample(const int time){
+    return (unsigned int) (0.001f * time * lastSampleRate);
 }
 
 float Delay::lerp(float a, float b, float f)
@@ -180,7 +182,7 @@ int Delay::limitDelayLength(int delayLength){
     
     int result = delayLength;
     if (delayLength < 0){
-        result = 0;
+        result = convertMStoSample(1);
     }
     if (delayLength >= maxDelayLength){
         result = maxDelayLength;
