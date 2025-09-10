@@ -67,7 +67,7 @@ private:
     double lastSampleRate;
     bool isOn = true;
     
-    Delay delayLine;
+    Delay<float> delayLine;
     
     void updatePower();
     

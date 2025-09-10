@@ -16,55 +16,57 @@
 #define DEFAULT_RATE 0.01f
 #define DEFAULT_DEPTH 0.0
 
-typedef struct {
-    int channel;
-    int delayIndex;
-    juce::dsp::Oscillator<float> lfo;
-} ChannelState;
-
+template<typename SampleType>
 class Delay {
 public:
     void prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels);
     void reset();
-    float processSample(int channel, float sample);
+    SampleType processSample(int channel, SampleType sample);
     
-    void setDelayLength(const int delayTime_ms);
+    void setDelayLength(const SampleType delayTime_ms);
     void setMix(const float mix);
     void setFeedback(const float feedback);
     void setRate(const float rate);
-    void setDepth(const int depth);
+    void setDepth(const SampleType depth);
     
     void clearDelayLine();
 private:
+    
+    typedef struct {
+        int channel;
+        SampleType delayIndex;
+        juce::dsp::Oscillator<float> lfo;
+    } ChannelState;
+    
     bool isPrepared { false };
     double lastSampleRate;
     
     std::vector<ChannelState> channelStates;
     
     juce::AudioBuffer<float> delayBuffer;
-    int centerDelayLength;
-    juce::SmoothedValue<float> delayLength;
-    int maxDelayLength;
+    SampleType centerDelayLength;
+    juce::SmoothedValue<SampleType> delayLength;
+    int maxDelayinSamples;
     
-    float interpolateSample(ChannelState* channelState);
+    SampleType interpolateSample(ChannelState* channelState);
     
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> dryGain, wetGain;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> feedback { DEFAULT_FEEDBACK };
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> rate { 0.01f };
     
     float mix = DEFAULT_MIX;
-    int depth = DEFAULT_DEPTH; // in ms
+    SampleType depth = DEFAULT_DEPTH; // in ms
     
-    float readFromBuffer(ChannelState* channelState);
-    void writeToBuffer(ChannelState* channelState, float input);
+    SampleType readFromBuffer(ChannelState* channelState);
+    void writeToBuffer(ChannelState* channelState, SampleType input);
     
     //-----------------------------------------------------------------------------
     // Utility
     //-----------------------------------------------------------------------------
-    int convertMStoSample(const int time);
-    float lerp(float a, float b, float f);
-    int limitDelayLength(int delayLength);
-    float limitOutput(float value);
+    SampleType convertMStoSample(const SampleType time);
+    SampleType lerp(SampleType a, SampleType b, SampleType f);
+    SampleType limitDelayLength(SampleType delayLength);
+    SampleType limitOutput(SampleType value);
 };
 
 

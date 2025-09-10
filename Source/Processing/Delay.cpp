@@ -10,7 +10,8 @@
 
 #include "Delay.h"
 
-void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels){
+template<typename SampleType>
+void Delay<SampleType>::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannels){
     lastSampleRate = sampleRate;
     
     juce::dsp::ProcessSpec spec;
@@ -27,9 +28,9 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
         channelStates[channel].lfo.setFrequency(rate.getNextValue());
     }
     
-    maxDelayLength = (int)sampleRate;
+    maxDelayinSamples = sampleRate;
 
-    delayBuffer.setSize(numChannels, maxDelayLength + 2);
+    delayBuffer.setSize(numChannels, maxDelayinSamples + 2);
     delayBuffer.clear();
     
     isPrepared = true;
@@ -37,7 +38,8 @@ void Delay::prepareToPlay(double sampleRate, int samplesPerBlock, int numChannel
     reset();
 }
 
-void Delay::reset(){
+template<typename SampleType>
+void Delay<SampleType>::reset(){
     
     mix = DEFAULT_MIX;
     feedback = DEFAULT_FEEDBACK;
@@ -49,7 +51,7 @@ void Delay::reset(){
     feedback.reset(lastSampleRate, 0.02);
     rate.reset(lastSampleRate, 0.02);
     
-    centerDelayLength = (int) lastSampleRate / 2;
+    centerDelayLength = lastSampleRate / 2;
     delayLength.reset(lastSampleRate, 0.02);
     delayBuffer.clear();
     
@@ -60,17 +62,18 @@ void Delay::reset(){
     
 }
 
-float Delay::processSample(int channel, float input){
+template<typename SampleType>
+SampleType Delay<SampleType>::processSample(int channel, SampleType input){
     
     jassert (isPrepared);
     
     ChannelState* channelState = &channelStates[channel];
     
-    float delayOutput = readFromBuffer(channelState);
+    SampleType delayOutput = readFromBuffer(channelState);
     writeToBuffer(channelState, input);
     
     float lfoValue = channelState->lfo.processSample(0.0f);
-    float modulationLength = lfoValue * convertMStoSample(depth);
+    SampleType modulationLength = lfoValue * convertMStoSample(depth);
 
     delayLength.setTargetValue(limitDelayLength(centerDelayLength + modulationLength));
     
@@ -82,30 +85,33 @@ float Delay::processSample(int channel, float input){
     // Balanced Dry/Wet Mixing Rule
     dryGain.setTargetValue(2.0f * juce::jmin(0.5f, 1.0f - mix));
     wetGain.setTargetValue(2.0f * juce::jmin(0.5f, mix));
-    float output = dryGain.getNextValue() * input + wetGain.getNextValue() * delayOutput;
+    SampleType output = dryGain.getNextValue() * input + wetGain.getNextValue() * delayOutput;
     
     return limitOutput(output);
 }
 
-float Delay::readFromBuffer(ChannelState* channelState){
+template<typename SampleType>
+SampleType Delay<SampleType>::readFromBuffer(ChannelState* channelState){
 
 //    return interpolateSample(channelState);
     return delayBuffer.getSample(channelState->channel, channelState->delayIndex);
 }
 
-void Delay::writeToBuffer(ChannelState* channelState, float input){
-    float delayOutput = readFromBuffer(channelState);
-    float delayInput = input + delayOutput * feedback.getNextValue();
+template<typename SampleType>
+void Delay<SampleType>::writeToBuffer(ChannelState* channelState, SampleType input){
+    SampleType delayOutput = readFromBuffer(channelState);
+    SampleType delayInput = input + delayOutput * feedback.getNextValue();
     delayBuffer.setSample(channelState->channel, channelState->delayIndex, delayInput);
 }
 
-float Delay::interpolateSample(ChannelState* channelState){
+template<typename SampleType>
+SampleType Delay<SampleType>::interpolateSample(ChannelState* channelState){
     size_t index1 = static_cast<size_t> (std::floor (channelState->delayIndex));
     size_t index2 = index1 + 1;
     
-    if (index2 >= maxDelayLength){
-        index1 %= maxDelayLength;
-        index2 %= maxDelayLength;
+    if (index2 >= maxDelayinSamples){
+        index1 %= maxDelayinSamples;
+        index2 %= maxDelayinSamples;
     }
     
     auto value1 = delayBuffer.getSample (channelState->channel, index1);
@@ -114,33 +120,37 @@ float Delay::interpolateSample(ChannelState* channelState){
     return value1 + (channelState->delayIndex - 1) * (value2 - value1);
 }
 
-void Delay::setDelayLength(const int delayTime_ms){
+template<typename SampleType>
+void Delay<SampleType>::setDelayLength(const SampleType delayTime_ms){
     
     jassert(isPrepared);
     jassert(delayTime_ms > 0);
     
     centerDelayLength = convertMStoSample(delayTime_ms);
     
-    if (centerDelayLength > maxDelayLength){
-        centerDelayLength = maxDelayLength;
+    if (centerDelayLength > maxDelayinSamples){
+        centerDelayLength = maxDelayinSamples;
     }
 }
 
-void Delay::setMix(const float newValue){
+template<typename SampleType>
+void Delay<SampleType>::setMix(const float newValue){
     
     jassert(isPrepared);
     
     this->mix = newValue;
 }
 
-void Delay::setFeedback(const float newValue){
+template<typename SampleType>
+void Delay<SampleType>::setFeedback(const float newValue){
     
     jassert(isPrepared);
     
     this->feedback.setTargetValue(newValue);
 }
 
-void Delay::setRate(const float newValue){
+template<typename SampleType>
+void Delay<SampleType>::setRate(const float newValue){
     
     jassert(isPrepared);
     
@@ -152,44 +162,44 @@ void Delay::setRate(const float newValue){
     
 }
 
-void Delay::setDepth(const int depth){
+template<typename SampleType>
+void Delay<SampleType>::setDepth(const SampleType depth){
     
     jassert(isPrepared);
     
     this->depth = depth;
 }
 
-void Delay::clearDelayLine(){
+template<typename SampleType>
+void Delay<SampleType>::clearDelayLine(){
     delayBuffer.clear();
 }
 
 //-----------------------------------------------------------------------------
 // Utility
 //-----------------------------------------------------------------------------
-int Delay::convertMStoSample(const int time){
-    return (unsigned int) (0.001f * time * lastSampleRate);
+template<typename SampleType>
+SampleType Delay<SampleType>::convertMStoSample(const SampleType time){
+    return (0.001f * time * lastSampleRate);
 }
 
-float Delay::lerp(float a, float b, float f)
+template<typename SampleType>
+SampleType Delay<SampleType>::lerp(SampleType a, SampleType b, SampleType f)
 {
     return a * (1.0 - f) + (b * f);
 }
 
-int Delay::limitDelayLength(int delayLength){
-    
-    int result = delayLength;
-    if (delayLength < 0){
-        result = convertMStoSample(1);
-    }
-    if (delayLength >= maxDelayLength){
-        result = maxDelayLength;
-    }
-    return result;
+template<typename SampleType>
+SampleType Delay<SampleType>::limitDelayLength(SampleType delayLength){
+
+    SampleType result = delayLength;
+    return juce::jlimit(1.0f, (float) maxDelayinSamples, (float) result);
 }
 
-float Delay::limitOutput(float value){
+template<typename SampleType>
+SampleType Delay<SampleType>::limitOutput(SampleType value){
     
-    float output = 0.0f;
+    SampleType output = 0.0f;
     
     if (value > 1.0f){
         output = 1.0f;
@@ -204,3 +214,6 @@ float Delay::limitOutput(float value){
     return output;
 }
 
+//=============================================================================
+template class Delay<float>;
+template class Delay<int>;
