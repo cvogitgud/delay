@@ -23,7 +23,7 @@ public:
     void reset();
     SampleType processSample(int channel, SampleType sample);
     
-    void setDelayLength(const SampleType delayTime_ms);
+    void setDelay(const SampleType delayTime_ms);
     void setMix(const float mix);
     void setFeedback(const float feedback);
     void setRate(const float rate);
@@ -44,8 +44,8 @@ private:
     std::vector<ChannelState> channelStates;
     
     juce::AudioBuffer<float> delayBuffer;
-    SampleType centerDelayLength;
-    juce::SmoothedValue<SampleType> delayLength;
+    SampleType centerDelayinSamples;
+    juce::SmoothedValue<SampleType> delay;
     int maxDelayinSamples;
     
     SampleType interpolateSample(ChannelState* channelState);

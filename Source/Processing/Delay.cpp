@@ -51,8 +51,8 @@ void Delay<SampleType>::reset(){
     feedback.reset(lastSampleRate, 0.02);
     rate.reset(lastSampleRate, 0.02);
     
-    centerDelayLength = lastSampleRate / 2;
-    delayLength.reset(lastSampleRate, 0.02);
+    centerDelayinSamples = lastSampleRate / 2;
+    delay.reset(lastSampleRate, 0.02);
     delayBuffer.clear();
     
     for (int channel = 0; channel < channelStates.size(); ++channel){
@@ -72,14 +72,15 @@ SampleType Delay<SampleType>::processSample(int channel, SampleType input){
     SampleType delayOutput = readFromBuffer(channelState);
     writeToBuffer(channelState, input);
     
-    float lfoValue = channelState->lfo.processSample(0.0f);
-    SampleType modulationLength = lfoValue * convertMStoSample(depth);
+//    float lfoValue = channelState->lfo.processSample(0.0f);
+//    SampleType modulationLength = lfoValue * convertMStoSample(depth);
 
-    delayLength.setTargetValue(limitDelayLength(centerDelayLength + modulationLength));
+//    delay.setTargetValue(limitDelayLength(centerDelayinSamples + modulationLength));
+    delay.setTargetValue(centerDelayinSamples);
     
     channelState->delayIndex++;
-    if (channelState->delayIndex >= delayLength.getNextValue()){
-        channelState->delayIndex -= delayLength.getNextValue();
+    if (channelState->delayIndex >= delay.getNextValue()){
+        channelState->delayIndex -= delay.getNextValue();
     }
 
     // Balanced Dry/Wet Mixing Rule
@@ -93,8 +94,8 @@ SampleType Delay<SampleType>::processSample(int channel, SampleType input){
 template<typename SampleType>
 SampleType Delay<SampleType>::readFromBuffer(ChannelState* channelState){
 
-//    return interpolateSample(channelState);
-    return delayBuffer.getSample(channelState->channel, channelState->delayIndex);
+    return interpolateSample(channelState);
+//    return delayBuffer.getSample(channelState->channel, channelState->delayIndex);
 }
 
 template<typename SampleType>
@@ -106,30 +107,22 @@ void Delay<SampleType>::writeToBuffer(ChannelState* channelState, SampleType inp
 
 template<typename SampleType>
 SampleType Delay<SampleType>::interpolateSample(ChannelState* channelState){
-    size_t index1 = static_cast<size_t> (std::floor (channelState->delayIndex));
-    size_t index2 = index1 + 1;
-    
-    if (index2 >= maxDelayinSamples){
-        index1 %= maxDelayinSamples;
-        index2 %= maxDelayinSamples;
-    }
-    
-    auto value1 = delayBuffer.getSample (channelState->channel, index1);
-    auto value2 = delayBuffer.getSample (channelState->channel, index2);
+    auto* data = delayBuffer.getWritePointer(channelState->channel);
+    size_t i = static_cast<size_t> (channelState->delayIndex);
 
-    return value1 + (channelState->delayIndex - 1) * (value2 - value1);
+    return lerp(data[i], data[i+1], channelState->delayIndex - i);
 }
 
 template<typename SampleType>
-void Delay<SampleType>::setDelayLength(const SampleType delayTime_ms){
+void Delay<SampleType>::setDelay(const SampleType delayTime_ms){
     
     jassert(isPrepared);
     jassert(delayTime_ms > 0);
     
-    centerDelayLength = convertMStoSample(delayTime_ms);
+    centerDelayinSamples = convertMStoSample(delayTime_ms);
     
-    if (centerDelayLength > maxDelayinSamples){
-        centerDelayLength = maxDelayinSamples;
+    if (centerDelayinSamples > maxDelayinSamples){
+        centerDelayinSamples = maxDelayinSamples;
     }
 }
 
@@ -182,18 +175,15 @@ template<typename SampleType>
 SampleType Delay<SampleType>::convertMStoSample(const SampleType time){
     return (0.001f * time * lastSampleRate);
 }
-
+             
 template<typename SampleType>
-SampleType Delay<SampleType>::lerp(SampleType a, SampleType b, SampleType f)
-{
+SampleType Delay<SampleType>::lerp(SampleType a, SampleType b, SampleType f){
     return a * (1.0 - f) + (b * f);
 }
 
 template<typename SampleType>
-SampleType Delay<SampleType>::limitDelayLength(SampleType delayLength){
-
-    SampleType result = delayLength;
-    return juce::jlimit(1.0f, (float) maxDelayinSamples, (float) result);
+SampleType Delay<SampleType>::limitDelayLength(SampleType delay){
+    return juce::jlimit(1.0f, static_cast<float> (maxDelayinSamples), static_cast<float> (delay));
 }
 
 template<typename SampleType>

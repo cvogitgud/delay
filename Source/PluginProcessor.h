@@ -66,15 +66,13 @@ public:
 private:
     double lastSampleRate;
     bool isOn = true;
+    void updatePower();
     
     Delay<float> delayLine;
-    
-    void updatePower();
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     void parameterChanged(const juce::String& parameterId, float newValue) override;
     void updateParameters();
-    
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcrastinatorAudioProcessor)
